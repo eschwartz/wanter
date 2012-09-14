@@ -2,6 +2,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+<style type="text/css">
+.productDetails {
+	list-style:none;
+	padding:15px;
+	border:1px solid rgba(0,0,0,.7);
+}
+</style>
+
 <title>Wanter - Backbone Clone</title>
 <script type="text/javascript" src="../lib/jquery.js"></script>
 <script type="text/javascript" src="../lib/underscore.js"></script>
@@ -57,6 +66,53 @@ Backbone.Marionette.View.prototype.delegateEvents = function(events) {
   }
 }
 
+</script>
+
+<script type="text/javascript">
+/**
+ * beforeClose, now with deferreds!
+ * Allows you to wait to call close until beforeClose has completed.
+ * Very useful if beforeClose is calling an animation or async.
+ * beforeClose is passed a deferred.resolve method as a parameter.
+ * calling the resolve method will allow the closing to continue
+ * eg.
+ 
+ beforeClose: function(run) {
+	 this.$el.hide().fadeOut(run);
+	 return false;				// Must return false to use the deferred
+ }
+*/
+
+// NOTE: should submit a pull request for Marionette. This is pretty sweet, imho.
+
+_.extend(Backbone.Marionette.View.prototype, {
+	close: function() {
+		if (this.beforeClose) {
+			
+			// if beforeClose returns false, wait for beforeClose to resolve before closing
+			// Before close calls `run` parameter to continue with closing element
+			var dfd = $.Deferred(), run = dfd.resolve, self = this;
+			if(this.beforeClose(run) === false) {
+				dfd.done(function() {
+					self._closeView();				// call _closeView, making sure our context is still `this`
+				});
+				return true;
+			}
+		}
+		
+		// Run close immediately if beforeClose does not return false
+		this._closeView();
+	},
+	
+	_closeView: function() {
+		this.remove();
+	
+		if (this.onClose) { this.onClose(); }
+		this.trigger('close');
+		this.unbindAll();
+		this.unbind();		
+	}
+});
 </script>
 </head>
 
@@ -144,6 +200,7 @@ Wanter.ProductView = Backbone.Marionette.ItemView.extend({
 */
 Wanter.ProductDetailsView = Backbone.Marionette.ItemView.extend({
 	tagName: 'li',
+	className: 'productDetails',
 	template: '#product-details-template',
 	
 	ui: {
@@ -153,6 +210,14 @@ Wanter.ProductDetailsView = Backbone.Marionette.ItemView.extend({
 	events: {
 		'click closeBtn' : 'close'
 	},
+	
+	onRender: function() {
+		this.$el.hide().fadeIn();
+	},
+	beforeClose: function(run) {
+		this.$el.fadeOut(run);
+		return false;
+	}
 });
 
 /**
