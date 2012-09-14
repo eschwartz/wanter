@@ -7,6 +7,57 @@
 <script type="text/javascript" src="../lib/underscore.js"></script>
 <script type="text/javascript" src="../lib/backbone.js"></script>
 <script type="text/javascript" src="../lib/backbone.marionette.js"></script>
+
+<script type="text/javascript">
+/**
+ * Modified version of Backbone.Marionette.View.delegateEvents
+ * Allows to delegate events to a named elements in this.selectors
+ * eg. ui: { myButton: '#myButton' }, events: { 'click myButton': 'myCallback'}
+*/
+
+// NOTE: should submit a pull request for Marionette. This is pretty sweet, imho.
+
+
+
+/* Helper Functions required for delegateEvents */
+// Helper function to get a value from a Backbone object as a property
+// or as a function.
+var getValue = function(object, prop) {
+if (!(object && object[prop])) return null;
+return _.isFunction(object[prop]) ? object[prop]() : object[prop];
+};
+
+var delegateEventSplitter = /^(\S+)\s*(.*)$/;
+
+
+Backbone.Marionette.View.prototype.delegateEvents = function(events) {
+  if (!(events || (events = getValue(this, 'events')))) return;
+  this.undelegateEvents();
+  for (var key in events) {
+	// Determine callback method
+	var method = events[key];
+	if (!_.isFunction(method)) method = this[events[key]];
+	if (!method) throw new Error('Method "' + events[key] + '" does not exist');
+	
+	// Split up selector and event binding
+	var match = key.match(delegateEventSplitter);
+	var eventName = match[1];
+	
+	// Check for named selector
+	var	selector = (this.ui && _.has(this.ui, match[2]))? this.ui[match[2]]: match[2];
+	
+	// Bind the event to the DOM object
+	method = _.bind(method, this);
+	eventName += '.delegateEvents' + this.cid;
+	if (selector === '') {
+	  this.$el.bind(eventName, method);
+	} else {
+	  this.$el.delegate(selector, eventName, method);
+	}
+  }
+}
+
+</script>
 </head>
 
 <body>
@@ -24,8 +75,7 @@
 
 <script id="product-details-template" type="text/html">
 	<div>
-		<h3><%=name%></h3>
-		<p><%=description %></p>
+		<h2><%=name %>: <%=description %></h2>
 		<button class="close">Close</button>
 	</div>
 </script>
@@ -100,9 +150,8 @@ Wanter.ProductDetailsView = Backbone.Marionette.ItemView.extend({
 		closeBtn: '.close'
 	},
 	
-	// Note: Should try repurposing that Backbone.Events extension I made for yii-beersdb to use named ui elements
 	events: {
-		'click .close' : 'close'
+		'click closeBtn' : 'close'
 	},
 });
 
