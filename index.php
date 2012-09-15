@@ -169,30 +169,6 @@ Wanter.addRegions({
 });
 
 
-/**
- * ProductView
- * a sinlge product ItemView
-*/
-Wanter.ProductView = Backbone.Marionette.ItemView.extend({
-	tagName: 'li',
-	template: '#product-template',
-	
-	events: {
-		'click' : 'openDetails'
-	},
-	
-	/**
-	 * Opens a ProductDetailsView for this product
-	 * and inserts after this view
-	*/
-	openDetails: function() {
-		var detailsView = new Wanter.ProductDetailsView({
-			model: this.model
-		});
-		
-		detailsView.render().$el.insertAfter(this.$el);
-	}
-});
 
 /** 
  * ProductDetailsView
@@ -221,12 +197,79 @@ Wanter.ProductDetailsView = Backbone.Marionette.ItemView.extend({
 });
 
 /**
+ * ProductView
+ * a sinlge product ItemView
+*/
+Wanter.ProductView = Backbone.Marionette.ItemView.extend({
+	tagName: 'li',
+	template: '#product-template',
+	detailView: Wanter.ProductDetailsView,
+	
+	openDetailView: null,
+	
+	foo: "bar",
+	
+	initialize: function() {
+		_.bind(this.triggerDetails, this);
+	},
+	
+	events: {
+		'click' : 'triggerDetails'
+		/// On detail click --> notify ListView that this was clicked
+		// list view will close all other views, then tell this view to open details
+	},
+	
+	triggerDetails: function() {
+		// I'll let the list view handle opening and closing details
+		Wanter.vent.trigger('showDetails', this, this.model);
+	},
+	
+	/**
+	 * Opens a ProductDetailsView for this product
+	 * and inserts after this view
+	*/
+	showDetails: function() {
+		this.openDetailView = new this.detailView({
+			model: this.model
+		});
+		
+		this.openDetailView.render().$el.insertAfter(this.$el);
+	},
+	
+	closeDetails: function() {
+		this.openDetailView.close();
+	},
+});
+
+
+/**
  * ProductsListView
  * List view of all products
 */
 Wanter.ProductListView = Backbone.Marionette.CollectionView.extend({
 	tagName: 'ul',
-	itemView: Wanter.ProductView
+	itemView: Wanter.ProductView,
+	
+	currentDetailsView: null,				// the instance of the productdetailsview which is currently open
+
+	initialize: function() {
+		//_.bind(this.openProductDetails, this);
+		
+		// Handle opening and closing of detail views
+		Wanter.vent.bind('showDetails', this.openProductDetails);
+	},
+	
+	// Handle switching between detail views
+	openProductDetails: function(view, model) {
+		// close any open detail view
+		if(this.currentDetailsView) {
+			this.currentDetailsView.close();
+		}
+	
+		
+		view.showDetails();
+		this.currentDetailsView = view.openDetailView;
+	}
 });
 
 Wanter.start();
