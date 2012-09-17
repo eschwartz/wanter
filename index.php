@@ -77,24 +77,29 @@ Backbone.Marionette.View.prototype.delegateEvents = function(events) {
  * calling the resolve method will allow the closing to continue
  * eg.
  
- beforeClose: function(run) {
-	 this.$el.hide().fadeOut(run);
+ beforeClose: function(close) {
+	 this.$el.hide().fadeOut(close);
 	 return false;				// Must return false to use the deferred
  }
 */
 
 // NOTE: should submit a pull request for Marionette. This is pretty sweet, imho.
 
+window.noop = function() {}
+
 _.extend(Backbone.Marionette.View.prototype, {
-	close: function() {
+	close: function(callback) {
+		callback = (callback && _.isFunction(callback))? callback : window.noop;
+		
 		if (this.beforeClose) {
 			
 			// if beforeClose returns false, wait for beforeClose to resolve before closing
 			// Before close calls `run` parameter to continue with closing element
-			var dfd = $.Deferred(), run = dfd.resolve, self = this;
-			if(this.beforeClose(run) === false) {
+			var dfd = $.Deferred(), close = dfd.resolve, self = this;
+			if(this.beforeClose(close) === false) {
 				dfd.done(function() {
 					self._closeView();				// call _closeView, making sure our context is still `this`
+					callback.call(self);
 				});
 				return true;
 			}
@@ -190,8 +195,8 @@ Wanter.ProductDetailsView = Backbone.Marionette.ItemView.extend({
 	onRender: function() {
 		this.$el.hide().fadeIn();
 	},
-	beforeClose: function(run) {
-		this.$el.fadeOut(run);
+	beforeClose: function(close) {
+		this.$el.fadeOut(close);
 		return false;
 	}
 });
@@ -205,23 +210,21 @@ Wanter.ProductView = Backbone.Marionette.ItemView.extend({
 	template: '#product-template',
 	detailView: Wanter.ProductDetailsView,
 	
-	openDetailView: null,
-	
 	foo: "bar",
 	
 	initialize: function() {
-		_.bind(this.triggerDetails, this);
+		_.bindAll(this, 'showDetails', 'handleRequestDetails', 'closeDetails'); 
 	},
 	
 	events: {
-		'click' : 'triggerDetails'
+		'click' : 'handleRequestDetails'
 		/// On detail click --> notify ListView that this was clicked
 		// list view will close all other views, then tell this view to open details
 	},
 	
-	triggerDetails: function() {
+	handleRequestDetails: function() {
 		// I'll let the list view handle opening and closing details
-		Wanter.vent.trigger('showDetails', this, this.model);
+		Wanter.vent.trigger('details:request', this, this.model);
 	},
 	
 	/**
@@ -229,11 +232,14 @@ Wanter.ProductView = Backbone.Marionette.ItemView.extend({
 	 * and inserts after this view
 	*/
 	showDetails: function() {
-		this.openDetailView = new this.detailView({
+		var detailView = new this.detailView({
 			model: this.model
 		});
 		
-		this.openDetailView.render().$el.insertAfter(this.$el);
+		detailView.render().$el.insertAfter(this.$el);
+		
+		// Tell the app which details view is rendered
+		Wanter.vent.trigger('details:render', detailView, this.model);
 	},
 	
 	closeDetails: function() {
@@ -249,26 +255,30 @@ Wanter.ProductView = Backbone.Marionette.ItemView.extend({
 Wanter.ProductListView = Backbone.Marionette.CollectionView.extend({
 	tagName: 'ul',
 	itemView: Wanter.ProductView,
-	
-	currentDetailsView: null,				// the instance of the productdetailsview which is currently open
+	openDetailsView: null,
 
 	initialize: function() {
 		//_.bind(this.openProductDetails, this);
 		
 		// Handle opening and closing of detail views
-		Wanter.vent.bind('showDetails', this.openProductDetails);
+		Wanter.vent.bind('details:request', this.openProductDetails);
+		Wanter.vent.bind('details:render', this.setOpenDetailsView);
+	},
+	
+	setOpenDetailsView: function(detailView) {
+		console.log('setting');
+		this.openDetailsView = detailView;
 	},
 	
 	// Handle switching between detail views
-	openProductDetails: function(view, model) {
-		// close any open detail view
-		if(this.currentDetailsView) {
-			this.currentDetailsView.close();
+	openProductDetails: function(itemView, model) {
+		if(!this.openDetailsView) {
+			itemView.showDetails();
+			return;
 		}
-	
 		
-		view.showDetails();
-		this.currentDetailsView = view.openDetailView;
+		// Close existing view, then open new details view.
+		this.openDetailsView.close(itemView.showDetails)
 	}
 });
 
