@@ -4,6 +4,18 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
 <style type="text/css">
+ul.products {
+	list-style:none;
+	margin:0;
+}
+	.products li {
+		display:inline-block;
+		margin:20px;
+	}
+		.products li img {
+			max-width:180px;
+		}
+
 .productDetails {
 	list-style:none;
 	padding:15px;
@@ -15,6 +27,7 @@
 <script type="text/javascript" src="../lib/jquery.js"></script>
 <script type="text/javascript" src="../lib/underscore.js"></script>
 <script type="text/javascript" src="../lib/backbone.js"></script>
+<script type="text/javascript" src="../lib/backbone.paginator.js"></script>
 <script type="text/javascript" src="../lib/backbone.marionette.js"></script>
 
 <script type="text/javascript">
@@ -129,23 +142,64 @@ _.extend(Backbone.Marionette.View.prototype, {
 
 <div id="cart"></div>
 
+<script id="loading-template" type="text/html">
+	<div class="loading">Loading...</div>
+</script>
+
 
 <script id="product-template" type="text/html">
-	<div data-id="<%=id%>"><%= name %></div>
+	<img src="<%=thumbSrc() %>" alt="<%=title %>" />
 </script>
 
 <script id="product-details-template" type="text/html">
 	<div>
-		<h2><%=name %>: <%=description %></h2>
+		<h2>name: descr</h2>
 		<button class="close">Close</button>
 	</div>
 </script>
 
 <script type="text/javascript">
-var productCollection = new Backbone.Collection([
-	{ id:1, name: "first", description: "Very cool." }, 
-	{ id:2, name: "second", description: "Not so cool to be second, is it?" }
-]);
+
+
+// TO DO NEXT: Try creating a relation to a images model, using Backbone relations extension
+var Product = Backbone.Model.extend({
+	idAttribute: "googleId",
+	parse: function(response) {
+		return response.product;
+	}
+});
+
+
+var ProductCollection = Backbone.Paginator.requestPager.extend({
+	model: Product,
+	
+	paginator_core: {
+		url: 'https://www.googleapis.com/shopping/search/v1/public/products?'	
+	},
+	paginator_ui: {
+		firstPage	: 0,
+		currentPage	: 0,
+		perPage		: 20,
+		totalPages	: 10			// a default, in case we fail to calculate the total pages
+	},
+	server_api: {
+		'key'			: 'AIzaSyDx-MNjeT9vIXdcKBvVaXZEOeVPRju8fBE',
+		'country'		: 'US',
+		'q'				: 'business casual',
+		'startIndex'	: function() { return (this.currentPage * this.perPage) + 1 },		// Google uses 1 based index
+		'maxResults'	: function() { return this.perPage }
+		
+	},
+	parse: function(response) {
+		// Example JSON: 	
+		// https://www.googleapis.com/shopping/search/v1/public/products?key=AIzaSyDx-MNjeT9vIXdcKBvVaXZEOeVPRju8fBE&country=US&language=en&currency=USD
+		var tags = response.items;
+		
+		this.totalPages = Math.ceil(response.totalItems / this.perPage);
+		
+		return tags;
+	}
+});
 </script>
 
 <script type="text/javascript">
@@ -156,12 +210,17 @@ var Wanter = new Backbone.Marionette.Application();
  * Initialize Application
 */
 Wanter.addInitializer(function(options) {
+	var productCollection = new ProductCollection();
 	var productList = new this.ProductListView({
 		collection: productCollection
 	});
 	
+	// Fetch first page of products collection
+	productCollection.goTo(0);
+	
 	// Show the productList view in the products region
 	this.products.show(productList);
+	
 });
 
 /**
@@ -173,6 +232,13 @@ Wanter.addRegions({
 	cart: '#cart'
 });
 
+
+/**
+ * All purpose loading view
+*/
+Wanter.LoadingView = Backbone.Marionette.ItemView.extend({
+	template: '#loading-template',
+});
 
 
 /** 
@@ -193,6 +259,7 @@ Wanter.ProductDetailsView = Backbone.Marionette.ItemView.extend({
 	},
 	
 	onRender: function() {
+		console.log(this);
 		this.$el.hide().fadeIn();
 	},
 	beforeClose: function(close) {
@@ -210,7 +277,11 @@ Wanter.ProductView = Backbone.Marionette.ItemView.extend({
 	template: '#product-template',
 	detailView: Wanter.ProductDetailsView,
 	
-	foo: "bar",
+	templateHelpers: {
+		thumbSrc: function() {
+			return this.images[0].link
+		}
+	},
 	
 	initialize: function() {
 		_.bindAll(this, 'showDetails', 'handleRequestDetails', 'closeDetails'); 
@@ -218,10 +289,9 @@ Wanter.ProductView = Backbone.Marionette.ItemView.extend({
 	
 	events: {
 		'click' : 'handleRequestDetails'
-		/// On detail click --> notify ListView that this was clicked
-		// list view will close all other views, then tell this view to open details
 	},
 	
+	// Broadcast the details request
 	handleRequestDetails: function() {
 		// I'll let the list view handle opening and closing details
 		Wanter.vent.trigger('details:request', this, this.model);
@@ -254,19 +324,22 @@ Wanter.ProductView = Backbone.Marionette.ItemView.extend({
 */
 Wanter.ProductListView = Backbone.Marionette.CollectionView.extend({
 	tagName: 'ul',
+	className: 'products',
 	itemView: Wanter.ProductView,
 	openDetailsView: null,
+	emptyView: Wanter.LoadingView,
 
 	initialize: function() {
-		//_.bind(this.openProductDetails, this);
+		// Bind view to products colletions
+		this.collection.on("reset", this.render, this);
 		
 		// Handle opening and closing of detail views
-		Wanter.vent.bind('details:request', this.openProductDetails);
-		Wanter.vent.bind('details:render', this.setOpenDetailsView);
+		Wanter.vent.bind('details:request', this.openProductDetails, this);
+		Wanter.vent.bind('details:render', this.setOpenDetailsView, this);
 	},
 	
+	// Set the current details view
 	setOpenDetailsView: function(detailView) {
-		console.log('setting');
 		this.openDetailsView = detailView;
 	},
 	
