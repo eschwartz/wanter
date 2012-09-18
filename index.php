@@ -27,6 +27,7 @@ body {
 		float:left;
 		margin:20px;
 		padding:10px;
+		cursor:pointer;
 	}
 		.productList .item img {
 			height:170px;
@@ -42,11 +43,11 @@ body {
 
 <title>Wanter - Backbone Clone</title>
 <script type="text/javascript" src="../lib/jquery.js"></script>
+<script type="text/javascript" src="../lib/jquery.masonry.min.js"></script>
 <script type="text/javascript" src="../lib/underscore.js"></script>
 <script type="text/javascript" src="../lib/backbone.js"></script>
 <script type="text/javascript" src="../lib/backbone.paginator.js"></script>
 <script type="text/javascript" src="../lib/backbone.marionette.js"></script>
-
 <script type="text/javascript">
 /**
  * Modified version of Backbone.Marionette.View.delegateEvents
@@ -292,7 +293,6 @@ Wanter.ProductDetailsView = Backbone.Marionette.ItemView.extend({
 Wanter.ProductView = Backbone.Marionette.ItemView.extend({
 	template: '#product-template',
 	className: 'item',
-	detailView: Wanter.ProductDetailsView,
 	
 	templateHelpers: {
 		thumbSrc: function() {
@@ -301,7 +301,7 @@ Wanter.ProductView = Backbone.Marionette.ItemView.extend({
 	},
 	
 	initialize: function() {
-		_.bindAll(this, 'showDetails', 'handleRequestDetails', 'closeDetails'); 
+		_.bindAll(this,'handleRequestDetails', 'closeDetails'); 
 	},
 	
 	events: {
@@ -324,21 +324,6 @@ Wanter.ProductView = Backbone.Marionette.ItemView.extend({
 		Wanter.vent.trigger('details:request', this, this.model);
 	},
 	
-	/**
-	 * Opens a ProductDetailsView for this product
-	 * and inserts after this view
-	*/
-	showDetails: function() {
-		var detailView = new this.detailView({
-			model: this.model
-		});
-		
-		detailView.render().$el.insertAfter(this.$el);
-		
-		// Tell the app which details view is rendered
-		Wanter.vent.trigger('details:render', detailView, this.model);
-	},
-	
 	closeDetails: function() {
 		this.openDetailView.close();
 	},
@@ -352,8 +337,10 @@ Wanter.ProductView = Backbone.Marionette.ItemView.extend({
 Wanter.ProductListView = Backbone.Marionette.CollectionView.extend({
 	className: 'productList',
 	itemView: Wanter.ProductView,
-	openDetailsView: null,
+	openDetailView: null,
+	detailView: Wanter.ProductDetailsView,
 	emptyView: Wanter.LoadingView,
+	perRow: 4,							// Items per row. Used to add detailView after last item in row
 
 	initialize: function() {
 		// Bind view to products colletions
@@ -361,23 +348,33 @@ Wanter.ProductListView = Backbone.Marionette.CollectionView.extend({
 		
 		// Handle opening and closing of detail views
 		Wanter.vent.bind('details:request', this.openProductDetails, this);
-		Wanter.vent.bind('details:render', this.setOpenDetailsView, this);
 	},
 	
-	// Set the current details view
-	setOpenDetailsView: function(detailView) {
-		this.openDetailsView = detailView;
+	onRender: function() {
+		this.$el.append($('<div class="clear"></div>'));			// Kind of a crappy way to do this... but jquery overwrites my inline block
 	},
 	
 	// Handle switching between detail views
-	openProductDetails: function(itemView, model) {
-		if(!this.openDetailsView) {
-			itemView.showDetails();
+	openProductDetails: function(itemView, itemModel) {
+		// Find the last item in this row
+		var row = Math.ceil(itemView.$el.index() / this.perRow),
+			lastItemIndex = parseInt(row * this.perRow - 1),
+			$lastItemInRow = this.$el.find('.item:eq('+lastItemIndex +')'),
+			detailView = new this.detailView({ model: itemModel}),
+			self = this;
+			
+		var insertDetailView = function() {
+			detailView.render().$el.insertAfter($lastItemInRow);
+			self.openDetailView = detailView;
+		}
+		
+		if(!this.openDetailView) {
+			insertDetailView();
 			return;
 		}
 		
 		// Close existing view, then open new details view.
-		this.openDetailsView.close(itemView.showDetails)
+		this.openDetailView.close(insertDetailView());
 	}
 });
 
