@@ -4,16 +4,33 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
 <style type="text/css">
-ul.products {
-	list-style:none;
+
+body {
+	background: #f1f1f1;
+}
+
+.container {
+	background:#fff;
+	border:1px solid #ccc;
+	width:960px;
+	margin:0 auto;
+}
+
+.clear {
+	clear:both;
+}
+
+.productList {
 	margin:0;
 }
-	.products li {
-		display:inline-block;
+	.productList .item {
+		float:left;
 		margin:20px;
+		padding:10px;
 	}
-		.products li img {
-			max-width:180px;
+		.productList .item img {
+			height:170px;
+			width:170px;
 		}
 
 .productDetails {
@@ -138,7 +155,9 @@ _.extend(Backbone.Marionette.View.prototype, {
 
 <div id="profile"></div>
 
-<div id="products"></div>
+<div id="products" class='container'>
+</div>
+<div class="clear"></div>
 
 <div id="cart"></div>
 
@@ -185,7 +204,7 @@ var ProductCollection = Backbone.Paginator.requestPager.extend({
 	server_api: {
 		'key'			: 'AIzaSyDx-MNjeT9vIXdcKBvVaXZEOeVPRju8fBE',
 		'country'		: 'US',
-		'q'				: 'business casual',
+		'q'				: "business casual blazer men's",
 		'startIndex'	: function() { return (this.currentPage * this.perPage) + 1 },		// Google uses 1 based index
 		'maxResults'	: function() { return this.perPage }
 		
@@ -246,8 +265,7 @@ Wanter.LoadingView = Backbone.Marionette.ItemView.extend({
  * more info about a product
 */
 Wanter.ProductDetailsView = Backbone.Marionette.ItemView.extend({
-	tagName: 'li',
-	className: 'productDetails',
+	className: 'productDetails item',
 	template: '#product-details-template',
 	
 	ui: {
@@ -259,7 +277,6 @@ Wanter.ProductDetailsView = Backbone.Marionette.ItemView.extend({
 	},
 	
 	onRender: function() {
-		console.log(this);
 		this.$el.hide().fadeIn();
 	},
 	beforeClose: function(close) {
@@ -273,8 +290,8 @@ Wanter.ProductDetailsView = Backbone.Marionette.ItemView.extend({
  * a sinlge product ItemView
 */
 Wanter.ProductView = Backbone.Marionette.ItemView.extend({
-	tagName: 'li',
 	template: '#product-template',
+	className: 'item',
 	detailView: Wanter.ProductDetailsView,
 	
 	templateHelpers: {
@@ -289,6 +306,16 @@ Wanter.ProductView = Backbone.Marionette.ItemView.extend({
 	
 	events: {
 		'click' : 'handleRequestDetails'
+	},
+	
+	onRender: function() {
+		var self = this;
+		
+		self.$el.fadeTo(0,0, function() {
+			self.$el.imagesLoaded(function() {
+				self.$el.delay(100).fadeTo(800, 1);
+			});
+		});
 	},
 	
 	// Broadcast the details request
@@ -323,8 +350,7 @@ Wanter.ProductView = Backbone.Marionette.ItemView.extend({
  * List view of all products
 */
 Wanter.ProductListView = Backbone.Marionette.CollectionView.extend({
-	tagName: 'ul',
-	className: 'products',
+	className: 'productList',
 	itemView: Wanter.ProductView,
 	openDetailsView: null,
 	emptyView: Wanter.LoadingView,
