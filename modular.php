@@ -9,6 +9,7 @@
 <script type="text/javascript" src="../lib/backbone.js"></script>
 <script type="text/javascript" src="../lib/backbone.paginator.js"></script>
 <script type="text/javascript" src="../lib/backbone.marionette.js"></script>
+<script type="text/javascript" src="Backbone.Marionette.extended.js"></script>
 
 </head>
 
