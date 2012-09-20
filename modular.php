@@ -29,6 +29,10 @@
 	<div id="product-list"></div>
 </script>
 
+<script id="product-template" type="text/html">
+<%=title %>
+</script>
+
 <!-- END TEMPLATES
  ================== -->
 
@@ -44,7 +48,8 @@ WanterApp.addRegions({
 	products: '#products'
 });
 
-WanterApp.start();
+
+
 </script>
 
 
@@ -68,6 +73,7 @@ WanterApp.ProductsApp = function() {
 	});
 	
 	ProductsApp.initializeLayout = function() {
+		
 		// Instantiate Layout
 		ProductsApp.layout = new Layout();
 		
@@ -125,11 +131,10 @@ WanterApp.ProductsApp = function() {
 			this.totalPages = Math.ceil(response.totalItems / this.perPage);
 			
 			return tags;
-		},
-		
-		// Overwrite paginator goTo(pageNumber) function, to trigger events
+		}
 	});
 	
+	// Instantiate Products
 	ProductsApp.products = new ProductCollection();
 	
 	
@@ -162,27 +167,67 @@ WanterApp.ProductsApp = function() {
 		});
 	}
 	
-	// Go to first page when the app loads
-	WanterApp.addInitializer(function() {
-		ProductsApp.products.goTo(0);
-		
-		WanterApp.vent.on("goToPage:success", function(collection) {
-			console.log(collection);
-		});
-	});
 	 
 	
 	
 	return ProductsApp;
 }();
 
+// Go to first page when the app loads
+WanterApp.addInitializer(function() {
+	WanterApp.ProductsApp.products.goTo(0);
+});
+
+// just testing
+WanterApp.vent.on("goToPage:success", function(collection) {
+	console.log(collection);
+});
+</script>
+
+
+<script type="text/javascript">
+// WanterApp.ProductsApp.ProductList
+// Controller for product list views
+WanterApp.ProductsApp.ProductList = function() {
+	var ProductList = {};
+	
+	var ProductView = Backbone.Marionette.ItemView.extend({
+		template: '#product-template',
+		
+		/*
+		 * view triggers: "reqDetails"
+		 * App.vent.on("reqDetails", ProductList.showDetails);
+		 * ProductList.showDetails(itemModel, itemView) --> this should handle the logic
+		*/
+	});
+	
+	var ProductListView = Backbone.Marionette.CollectionView.extend({
+		itemView: ProductView
+	});
+	
+	ProductList.showProducts = function(collection) {
+		var listView = new ProductListView({ collection: collection });
+		WanterApp.ProductsApp.layout.products.show(listView);
+	};	
+	
+	return ProductList;
+}();
+
+// Show Products on init
+WanterApp.vent.on("layout:rendered", function() {
+	WanterApp.ProductsApp.ProductList.showProducts(WanterApp.ProductsApp.products);
+});
 
 
 </script>
 
 
+<script type="text/javascript">
+// bootstrap (in my html file)
 
-
+// Important: this needs to be the very last thing, or everything's messed up with order of operations
+WanterApp.start();
+</script>
 
 
 </body>
