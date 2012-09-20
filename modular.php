@@ -3,6 +3,9 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>Wanter - Modular</title>
+
+<link href="wanter.css" type="text/css" rel="stylesheet" />
+
 <script type="text/javascript" src="../lib/jquery.js"></script>
 <script type="text/javascript" src="../lib/jquery.masonry.min.js"></script>
 <script type="text/javascript" src="../lib/underscore.js"></script>
@@ -18,20 +21,45 @@
 <h2>Following the <a href="http://davidsulc.com/blog/2012/05/06/tutorial-a-full-backbone-marionette-application-part-1/" target="_blank">Marionette App Tutorial</a></h2>
 
 
-<div id="products"></div>
+<div id="products" class="container"></div>
 
 
 
 <!-- TEMPLATES
  ================== -->
+<script id="loading-template" type="text/html">
+	<div class="loading">Loading...</div>
+</script>
+
 <script id="products-layout" type="text/html">
 	<div id="search"></div>
 	<div id="product-list"></div>
 </script>
 
-<script id="product-template" type="text/html">
-<%=title %>
+<script id="product-list-template" type="text/html">
+	<div class="productList">
+		<div id="clearList" class="clear"></div>
+	</div>
 </script>
+
+<script id="product-template" type="text/html">
+	<img src="<%=thumbSrc() %>" alt="<%=title %>" />
+</script>
+
+<script id="product-details-template" type="text/html">
+	<div class="left image">
+		<img src="<%=imageSrc() %>" alt="<%=title %>" />
+	</div>
+	<div class="left content">
+		<h2><%=title %></h2>
+        <h5><%=brand %></h5>
+        <button class="btn">Add to Gift</button>
+        <p><%=description %></p>
+        <p><a href="#">Learn more</a></p>
+	</div>   
+	<div class="clear"></div>
+</script>
+
 
 <!-- END TEMPLATES
  ================== -->
@@ -54,12 +82,19 @@ WanterApp.addRegions({
 
 
 <script type="text/javascript">
-// WanterApp.ProductsApp.js
-// Products application object
-// Acts as controller for product listings
+/* WanterApp.ProductsApp.js
+ * Products application object
+ * Acts as controller for product listings
+ *
+ * Public methods: 
+ *  initializeLayout: shows a products layout in the products region of the app
+ *
+ * Public properties:
+ * 	products: a paginated collection of products
+ * 	layout: the layout for products
+*/
 
-WanterApp.ProductsApp = function() {
-	var ProductsApp = {};
+WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Marionette, $, _){
 	
 	/**
 	 * ProductsApp Layout
@@ -68,7 +103,7 @@ WanterApp.ProductsApp = function() {
 		template: '#products-layout',
 		regions: {
 			search: '#search',
-			products: '#product-list'
+			productList: '#product-list'
 		}
 	});
 	
@@ -167,11 +202,7 @@ WanterApp.ProductsApp = function() {
 		});
 	}
 	
-	 
-	
-	
-	return ProductsApp;
-}();
+});
 
 // Go to first page when the app loads
 WanterApp.addInitializer(function() {
@@ -180,45 +211,109 @@ WanterApp.addInitializer(function() {
 
 // just testing
 WanterApp.vent.on("goToPage:success", function(collection) {
-	console.log(collection);
+	console.log("products: ", collection);
 });
 </script>
 
 
 <script type="text/javascript">
-// WanterApp.ProductsApp.ProductList
-// Controller for product list views
-WanterApp.ProductsApp.ProductList = function() {
-	var ProductList = {};
-	
+/* WanterApp.ProductsApp.ProductList
+ * Controller for product list views
+ * 
+ * Public properties:
+ *
+ *
+ * Public methods:
+ *		showProducts(collection) - renders a collection of products in the `productList` region
+ *	   ~showDetail(model, itemView) - displays a detailView in the row under the specfied itemView. 
+*/ 
+//WanterApp.ProductsApp.ProductList = function() {
+WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Backbone, Marionette, $, _){
 	var ProductView = Backbone.Marionette.ItemView.extend({
 		template: '#product-template',
+		className: 'item',
 		
-		/*
-		 * view triggers: "reqDetails"
-		 * App.vent.on("reqDetails", ProductList.showDetails);
-		 * ProductList.showDetails(itemModel, itemView) --> this should handle the logic
-		*/
+		templateHelpers: {
+			// Returns the src of the products first image
+			thumbSrc: function() {
+				return this.images[0].link;
+			}
+		},
+		
+		events: {
+			'click'			: 'handleReqDetail'
+		},
+		
+		initialize: function() {
+			_.bindAll(this, 'handleReqDetail');
+		},
+		
+		handleReqDetail: function() {
+			ProductList.vent.trigger('detail:request', this.model, this);
+		},
+		
+		// Fade in element
+		onRender: function() {
+			var self = this;
+			
+			self.$el.fadeTo(0,0, function() {
+				self.$el.imagesLoaded(function() {
+					self.$el.delay(100).fadeTo(800, 1);
+				});
+			});
+		}
 	});
 	
-	var ProductListView = Backbone.Marionette.CollectionView.extend({
-		itemView: ProductView
+	var ProductListView = Backbone.Marionette.CompositeView.extend({
+		template	: '#product-list-template',
+		itemView	: ProductView,
+		perRow		: 4,
+		
+		ui: {
+			'clearFix'		: '#clearList'
+		},
+		
+		appendHtml: function(collectionView, itemView, index) {
+			// Add the view before our clearfix
+			itemView.$el.insertBefore(collectionView.ui.clearFix);
+		}
 	});
+	
+	// Module-level event aggregator
+	ProductList.vent = new Backbone.Marionette.EventAggregator();	
 	
 	ProductList.showProducts = function(collection) {
 		var listView = new ProductListView({ collection: collection });
-		WanterApp.ProductsApp.layout.products.show(listView);
-	};	
+		WanterApp.ProductsApp.layout.productList.show(listView);
+	};
 	
-	return ProductList;
-}();
+	// Show a specified detail view
+	ProductList.showDetail = function(model, itemView) {
+		console.log('Devils in the details');
+		/*
+			row = itemView.getRow();
+			$lastRowItem = row * fancymath;
+			
+			if(we're in the same row) {
+				change my model (view is bound to model)
+				fix height, hide, adjust height, slideDown
+			}
+			else if(we're in a new row, or there's no detail view open) {
+				instantiate a detail view
+				slideDown after $lastRowItem
+			}
+		*/
+	};
+	
+	
+	// Handle detail request
+	ProductList.vent.on("detail:request", this.showDetail);
+});
 
 // Show Products on init
 WanterApp.vent.on("layout:rendered", function() {
 	WanterApp.ProductsApp.ProductList.showProducts(WanterApp.ProductsApp.products);
 });
-
-
 </script>
 
 
