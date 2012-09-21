@@ -254,61 +254,37 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			this.bindTo(this.model, "change", this.render);
 		},
 		
-		beforeRender: function() {
+		beforeRender: function(render) {
 			// Save the elements height, so we can do height-change animations
-				console.log(this.ui.container instanceof $);
-			this.elHeight = (this.ui.container.height)? this.ui.container.height() : 0;
+			if(this.ui.container instanceof $) {
+				this.elHeight = this.ui.container.height();
+				// Fix height
+				//this.ui.container.height(this.ui.container.height());
+				this.ui.container.fadeTo(300, 0, render); 
+				
+				return false;
+			}
+			
+			this.elHeight = 0;
 		},
-	
-		// Slides down view
-		// NOTE: after the initial render, this.onReRender is called instead
+		
 		onRender: function() {
-			var self = this;
+			// Calculate new height
+			var self = this,
+				newHeight = this.ui.container.height();
+						
+			// Fix to old height
+			this.ui.container.height(this.elHeight);
 			
-			this.$el.hide();
-			window.setTimeout(function() {				// This is crappy hack, because the $el isn't inserting until after render is called.
-				self.$el.slideDown();
-			}, 15);
+			// Hide container content
+			this.ui.container.fadeTo(0,0);
 			
-			// Overwrite this onRender function with this.onReRender
-			this.onRender = this.onReRender;
-		},
-		beforeClose: function(close) {
-			this.$el.slideUp(close);
-			return false;
-		},
-		
-		/*
-			beforeRender: {
-				fix el height
-				fadeTo(0) --> delay rendering until fadeTo is complete
-			}
-			onRender: {
-				animate to new height
-			}
-		*/
-		
-		// Replaces onRender after the view has been rendered once
-		// Animates to new height
-		onReRender: function() {
-			var self = this;
-			
-			
-			
-			this.$el.imagesLoaded(function() {
-				var newHeight = self.ui.container.height();
-				
-				// fix the $el to the old height
-				self.ui.container.height(self.elHeight);
-				self.ui.container.contents().hide()
-				
-				// animate to new height
-				self.ui.container.animate({height: newHeight}, function() {
-					self.ui.container.contents().fadeIn();
-				});
+			// Animate to new height
+			this.ui.container.animate({height: newHeight}, function() {
+				self.ui.container.fadeTo(300, 1);
 			});
 		},
-		
+			
 		// Setse a new model, and refreshes the view
 		changeModel: function(newModel) {
 			this.model = newModel;
@@ -395,12 +371,14 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		// No detailView open --> render a new one
 		if(!_activeDetailView) {
 			_activeDetailView = new DetailView({model: model});
-			_activeDetailView.render().$el.insertAfter($lastItemInRow);
+			_activeDetailView.$el.insertAfter($lastItemInRow);
+			_activeDetailView.render();
 		}
 		
 		// We're in the same row --> refresh the detailView
 		else if(isSameRow) {
-			_activeDetailView.changeModel(model);
+			_activeDetailView.model = model;
+			_activeDetailView.render();
 		}
 		
 		// Close the detail view, and rerender
