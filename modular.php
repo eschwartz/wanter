@@ -297,6 +297,7 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 	var ProductView = Backbone.Marionette.ItemView.extend({
 		template: '#product-template',
 		className: 'item',
+		activeClassName: 'active',
 		
 		templateHelpers: {
 			// Returns the src of the products first image
@@ -368,7 +369,8 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 	
 	// Handle displaying detail views in the product lsit
 	ProductList.showDetail = function(model, itemView) {
-		var isSameRow = (!_activeDetailView)? false: (_getLastRowItem(itemView)[0] === _activeDetailView.$el.prev('.item')[0]);
+		var isSameRow = (!_activeDetailView)? false: (_getLastRowItem(itemView)[0] === _activeDetailView.$el.prev('.item')[0]),
+			isSameItem = (_activeDetailView && _activeDetailView.model === model);
 		
 		// Renders and inserts a detail view at the end of the row
 		var render = function() {
@@ -380,20 +382,33 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			$.scrollTo(_activeDetailView.$el, {duration: 400, offset: {top: -80} });
 		}
 		
+		// Give the active class to the appropriate itemView
+		var setActive = function() {
+			// Set active item
+			$('.' + itemView.className).removeClass(itemView.activeClassName);
+			itemView.$el.addClass(itemView.activeClassName);
+		}
+		
+		// Same view --> shut 'er down
+		if(isSameItem) return;
+		
 		// No detailView open --> render a new one
 		if(!_activeDetailView) {
 			render();
+			setActive();
 		}
 		
 		// We're in the same row --> refresh the detailView
 		else if(isSameRow) {
 			_activeDetailView.model = model;
 			_activeDetailView.render();
+			setActive();
 		}
 		
 		// Close the detail view, then render a new detail view in a new row
 		else {
 			_activeDetailView.close(render);
+			setActive();
 		}
 	};
 	
