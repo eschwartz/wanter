@@ -47,17 +47,19 @@
 </script>
 
 <script id="product-details-template" type="text/html">
-	<div class="left image">
-		<img src="<%=imageSrc() %>" alt="<%=title %>" />
+	<div class="details-container">
+		<div class="left image">
+			<img src="<%=imageSrc() %>" alt="<%=title %>" />
+		</div>
+		<div class="left content">
+			<h2><%=title %></h2>
+			<h5><%=brand %></h5>
+			<button class="btn">Add to Gift</button>
+			<p><%=description %></p>
+			<p><a href="#">Learn more</a></p>
+		</div>   
+		<div class="clear"></div>
 	</div>
-	<div class="left content">
-		<h2><%=title %></h2>
-        <h5><%=brand %></h5>
-        <button class="btn">Add to Gift</button>
-        <p><%=description %></p>
-        <p><a href="#">Learn more</a></p>
-	</div>   
-	<div class="clear"></div>
 </script>
 
 
@@ -229,6 +231,91 @@ WanterApp.vent.on("goToPage:success", function(collection) {
 */ 
 //WanterApp.ProductsApp.ProductList = function() {
 WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Backbone, Marionette, $, _){
+	var _activeDetailView = null;
+	var _perRow = 4;					// Items per row, so we know where to put the detail view
+	
+	var DetailView = Backbone.Marionette.ItemView.extend({
+		template	: '#product-details-template',
+		className	: 'productDetails item',
+		elHeight	: null,
+		
+		ui: {
+			container: '.details-container'
+		},
+		
+		templateHelpers: {
+			imageSrc: function() {
+				return (!this.images)? false: this.images[0].link;
+			}
+		},
+		
+		initialize: function() {
+			// Refresh on model change
+			this.bindTo(this.model, "change", this.render);
+		},
+		
+		beforeRender: function() {
+			// Save the elements height, so we can do height-change animations
+				console.log(this.ui.container instanceof $);
+			this.elHeight = (this.ui.container.height)? this.ui.container.height() : 0;
+		},
+	
+		// Slides down view
+		// NOTE: after the initial render, this.onReRender is called instead
+		onRender: function() {
+			var self = this;
+			
+			this.$el.hide();
+			window.setTimeout(function() {				// This is crappy hack, because the $el isn't inserting until after render is called.
+				self.$el.slideDown();
+			}, 15);
+			
+			// Overwrite this onRender function with this.onReRender
+			this.onRender = this.onReRender;
+		},
+		beforeClose: function(close) {
+			this.$el.slideUp(close);
+			return false;
+		},
+		
+		/*
+			beforeRender: {
+				fix el height
+				fadeTo(0) --> delay rendering until fadeTo is complete
+			}
+			onRender: {
+				animate to new height
+			}
+		*/
+		
+		// Replaces onRender after the view has been rendered once
+		// Animates to new height
+		onReRender: function() {
+			var self = this;
+			
+			
+			
+			this.$el.imagesLoaded(function() {
+				var newHeight = self.ui.container.height();
+				
+				// fix the $el to the old height
+				self.ui.container.height(self.elHeight);
+				self.ui.container.contents().hide()
+				
+				// animate to new height
+				self.ui.container.animate({height: newHeight}, function() {
+					self.ui.container.contents().fadeIn();
+				});
+			});
+		},
+		
+		// Setse a new model, and refreshes the view
+		changeModel: function(newModel) {
+			this.model = newModel;
+			this.render();
+		}
+	});
+	
 	var ProductView = Backbone.Marionette.ItemView.extend({
 		template: '#product-template',
 		className: 'item',
@@ -267,7 +354,6 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 	var ProductListView = Backbone.Marionette.CompositeView.extend({
 		template	: '#product-list-template',
 		itemView	: ProductView,
-		perRow		: 4,
 		
 		ui: {
 			'clearFix'		: '#clearList'
@@ -279,21 +365,49 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		}
 	});
 	
+	// Return the last item in the itemView's row
+	// NOTE: not handling if our row is half full at the end. Need a quick conditional to fix
+	var _getLastRowItem = function(itemView) {
+		var row = Math.ceil(itemView.$el.index() / _perRow) || 1,
+			lastItemIndex = parseInt(row * _perRow - 1),
+			$lastItemInRow = ProductList.listView.$el.find('.item:eq('+lastItemIndex +')');
+		
+		return $lastItemInRow;
+	}
+	
+	
+	// current instance of the ProductListView
+	ProductList.listView = null;			
+	
 	// Module-level event aggregator
 	ProductList.vent = new Backbone.Marionette.EventAggregator();	
 	
 	ProductList.showProducts = function(collection) {
-		var listView = new ProductListView({ collection: collection });
-		WanterApp.ProductsApp.layout.productList.show(listView);
+		ProductList.listView = new ProductListView({ collection: collection });
+		WanterApp.ProductsApp.layout.productList.show(ProductList.listView);
 	};
 	
 	// Show a specified detail view
 	ProductList.showDetail = function(model, itemView) {
-		console.log('Devils in the details');
+		var $lastItemInRow = _getLastRowItem(itemView),
+			isSameRow = (!_activeDetailView)? false: ($lastItemInRow[0] === _activeDetailView.$el.prev('.item')[0]);		
+		
+		// No detailView open --> render a new one
+		if(!_activeDetailView) {
+			_activeDetailView = new DetailView({model: model});
+			_activeDetailView.render().$el.insertAfter($lastItemInRow);
+		}
+		
+		// We're in the same row --> refresh the detailView
+		else if(isSameRow) {
+			_activeDetailView.changeModel(model);
+		}
+		
+		// Close the detail view, and rerender
+		else {
+		}
+		
 		/*
-			row = itemView.getRow();
-			$lastRowItem = row * fancymath;
-			
 			if(we're in the same row) {
 				change my model (view is bound to model)
 				fix height, hide, adjust height, slideDown
