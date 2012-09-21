@@ -285,10 +285,10 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			});
 		},
 			
-		// Setse a new model, and refreshes the view
-		changeModel: function(newModel) {
-			this.model = newModel;
-			this.render();
+		beforeClose: function(close) {
+			this.$el.slideUp(close);
+			
+			return false;
 		}
 	});
 	
@@ -319,6 +319,7 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		onRender: function() {
 			var self = this;
 			
+			// Hide, then fadeIn view
 			self.$el.fadeTo(0,0, function() {
 				self.$el.imagesLoaded(function() {
 					self.$el.delay(100).fadeTo(800, 1);
@@ -365,14 +366,17 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 	
 	// Show a specified detail view
 	ProductList.showDetail = function(model, itemView) {
-		var $lastItemInRow = _getLastRowItem(itemView),
-			isSameRow = (!_activeDetailView)? false: ($lastItemInRow[0] === _activeDetailView.$el.prev('.item')[0]);		
+		var isSameRow = (!_activeDetailView)? false: (_getLastRowItem(itemView)[0] === _activeDetailView.$el.prev('.item')[0]);
+		
+		var render = function() {
+			_activeDetailView = new DetailView({model: model});
+			_activeDetailView.$el.insertAfter(_getLastRowItem(itemView));
+			_activeDetailView.render();
+		}
 		
 		// No detailView open --> render a new one
 		if(!_activeDetailView) {
-			_activeDetailView = new DetailView({model: model});
-			_activeDetailView.$el.insertAfter($lastItemInRow);
-			_activeDetailView.render();
+			render();
 		}
 		
 		// We're in the same row --> refresh the detailView
@@ -383,6 +387,7 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		
 		// Close the detail view, and rerender
 		else {
+			_activeDetailView.close(render);
 		}
 		
 		/*
