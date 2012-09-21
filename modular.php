@@ -8,6 +8,8 @@
 
 <script type="text/javascript" src="../lib/jquery.js"></script>
 <script type="text/javascript" src="../lib/jquery.masonry.min.js"></script>
+<script type="text/javascript" src="../lib/plugins/jquery.scrollTo.js"></script>
+
 <script type="text/javascript" src="../lib/underscore.js"></script>
 <script type="text/javascript" src="../lib/backbone.js"></script>
 <script type="text/javascript" src="../lib/backbone.paginator.js"></script>
@@ -364,14 +366,18 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		WanterApp.ProductsApp.layout.productList.show(ProductList.listView);
 	};
 	
-	// Show a specified detail view
+	// Handle displaying detail views in the product lsit
 	ProductList.showDetail = function(model, itemView) {
 		var isSameRow = (!_activeDetailView)? false: (_getLastRowItem(itemView)[0] === _activeDetailView.$el.prev('.item')[0]);
 		
+		// Renders and inserts a detail view at the end of the row
 		var render = function() {
 			_activeDetailView = new DetailView({model: model});
 			_activeDetailView.$el.insertAfter(_getLastRowItem(itemView));
 			_activeDetailView.render();
+			
+			// Scroll to the row
+			$.scrollTo(_activeDetailView.$el, {duration: 400, offset: {top: -80} });
 		}
 		
 		// No detailView open --> render a new one
@@ -385,7 +391,7 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			_activeDetailView.render();
 		}
 		
-		// Close the detail view, and rerender
+		// Close the detail view, then render a new detail view in a new row
 		else {
 			_activeDetailView.close(render);
 		}
