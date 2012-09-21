@@ -345,10 +345,10 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 	// Return the last item in the itemView's row
 	// NOTE: not handling if our row is half full at the end. Need a quick conditional to fix
 	var _getLastRowItem = function(itemView) {
-		var row = Math.ceil(itemView.$el.index() / _perRow) || 1,
+		var row = Math.ceil((itemView.$el.index() + 1) / _perRow),
 			lastItemIndex = parseInt(row * _perRow - 1),
 			$lastItemInRow = ProductList.listView.$el.find('.item:eq('+lastItemIndex +')');
-		
+
 		return $lastItemInRow;
 	}
 	
@@ -389,17 +389,6 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		else {
 			_activeDetailView.close(render);
 		}
-		
-		/*
-			if(we're in the same row) {
-				change my model (view is bound to model)
-				fix height, hide, adjust height, slideDown
-			}
-			else if(we're in a new row, or there's no detail view open) {
-				instantiate a detail view
-				slideDown after $lastRowItem
-			}
-		*/
 	};
 	
 	
