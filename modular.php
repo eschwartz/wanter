@@ -58,7 +58,7 @@
 			<h5><%=brand %></h5>
 			<button class="btn">Add to Gift</button>
 			<p><%=description %></p>
-			<p><a href="#">Learn more</a></p>
+			<p><a href="<%=link %>" target="_blank">Learn more</a></p>
 		</div>   
 		<div class="clear"></div>
 	</div>
