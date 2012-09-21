@@ -86,6 +86,7 @@ _.extend(Backbone.Marionette.View.prototype, {
 		
 		// Run close immediately if beforeClose does not return false
 		this._closeView();
+		callback();
 	},
 	
 	_closeView: function() {
@@ -114,8 +115,10 @@ _.extend(Backbone.Marionette.ItemView.prototype, {
 				return true;
 			}
 		}
-
-		return this._renderView();
+		
+		var renderResult = this._renderView();
+		callback();
+		return renderResult;
 	},
 	
 	_renderView: function() {
