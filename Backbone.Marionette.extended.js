@@ -97,3 +97,40 @@ _.extend(Backbone.Marionette.View.prototype, {
 		this.unbind();		
 	}
 });
+
+_.extend(Backbone.Marionette.ItemView.prototype, {
+	
+	
+	render: function(callback) {
+		callback = (callback && _.isFunction(callback))? callback: window.noop;
+		
+		if(this.beforeRender) {
+			var dfd = $.Deferred(), render = dfd.resolve, self = this;
+			if(this.beforeRender(render) === false) {
+				dfd.done(function() {
+					self._renderView();
+					callback.call(self);
+				});
+				return true;
+			}
+		}
+
+		return this._renderView();
+	},
+	
+	_renderView: function() {
+		this.trigger("before:render", this);
+		this.trigger("item:before:render", this);
+	
+		var data = this.serializeData();
+		var template = this.getTemplate();
+		var html = Backbone.Marionette.Renderer.render(template, data);
+		this.$el.html(html);
+		this.bindUIElements();
+	
+		if (this.onRender){ this.onRender(); }
+		this.trigger("render", this);
+		this.trigger("item:rendered", this);
+		return this;
+	}
+});
