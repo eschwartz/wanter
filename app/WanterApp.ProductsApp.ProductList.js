@@ -166,11 +166,17 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			itemView.$el.addClass(itemView.activeClassName);
 		}
 		
-		// Same view --> shut 'er down
-		if(isSameItem) return;
+		// Same view --> close the detailView
+		if(isSameItem) {
+			_activeDetailView.close();
+			_activeDetailView = null;
+			
+			// Remove active class on itemView
+			$('.' + itemView.className).removeClass(itemView.activeClassName);
+		}
 		
 		// No detailView open --> render a new one
-		if(!_activeDetailView) {
+		else if(!_activeDetailView) {
 			render();
 			setActive();
 		}
