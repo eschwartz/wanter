@@ -137,3 +137,14 @@ _.extend(Backbone.Marionette.ItemView.prototype, {
 		return this;
 	}
 });
+
+
+/**
+ * IMO, attachview should bind UI elements. Why not?
+ */
+_.extend(Backbone.Marionette.Region.prototype, {
+	attachView: function(view) {
+		view.bindUIElements();					// Added line
+		this.currentView = view;
+	}
+});
