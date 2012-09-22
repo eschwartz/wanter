@@ -11,6 +11,7 @@
 */
 
 WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Marionette, $, _){
+	ProductsApp.vent = new Backbone.Marionette.EventAggregator();	
 	
 	/**
 	 * ProductsApp Layout
@@ -82,6 +83,15 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 			this.totalPages = Math.ceil(response.totalItems / this.perPage);
 			
 			return tags;
+		},
+		
+		/**
+		 * Search by term
+		*/
+		search: function(term) {
+			this.server_api.q = term;
+			
+			this.goTo(0);
 		}
 	});
 	
@@ -118,12 +128,19 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 		});
 	}
 	
+	
+	// Handle search
+	WanterApp.ProductsApp.vent.on("search:term", function(term) {
+		WanterApp.ProductsApp.products.search(term);
+	});
+	
 });
 
 // Go to first page when the app loads
 WanterApp.addInitializer(function() {
 	WanterApp.ProductsApp.products.goTo(0);
 });
+
 
 // just testing
 WanterApp.vent.on("goToPage:success", function(collection) {

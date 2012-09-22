@@ -29,16 +29,18 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		},
 		
 		initialize: function() {
-			// Refresh on model change
-			this.bindTo(this.model, "change", this.render);
+			// Close the detail view when we reset the collection (eg. on search, change page)
+			this.bindTo(this.model.collection, "reset", this.close);
 		},
 		
 		beforeRender: function(render) {
-			// Save the elements height, so we can do height-change animations
+			//Check that container is rendered
 			if(this.ui.container instanceof $) {
+				
+				// Save the elements height, so we can do height-change animation in this.onRender
 				this.elHeight = this.ui.container.height();
-				// Fix height
-				//this.ui.container.height(this.ui.container.height());
+				
+				// Fade out container, then render
 				this.ui.container.fadeTo(300, 0, render); 
 				
 				return false;
@@ -49,8 +51,8 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		
 		onRender: function() {
 			// Calculate new height
-			var self = this,
-				newHeight = this.ui.container.height();
+			var self = this;
+			var newHeight = this.ui.container.height();
 						
 			// Fix to old height
 			this.ui.container.height(this.elHeight);

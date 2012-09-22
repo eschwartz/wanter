@@ -19,7 +19,8 @@ WanterApp.module("ProductsApp.ProductSearch", function(ProductSearch, WanterApp,
 		
 		search: function() {
 			var term = this.ui.term.val().trim();
-			console.log(term);
+			
+			WanterApp.ProductsApp.vent.trigger("search:term", term);
 		}
 	});
 	
