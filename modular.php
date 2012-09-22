@@ -34,7 +34,9 @@
 </script>
 
 <script id="products-layout" type="text/html">
-	<div id="search"></div>
+	<div id="search">
+		<input type="text" placeholder="Search the Google Shopping API" name="term" id="term" />
+	</div>
 	<div id="product-list"></div>
 </script>
 
@@ -72,6 +74,7 @@
 <script type="text/javascript" src="app/WanterApp.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.ProductList.js"></script>
+<script type="text/javascript" src="app/WanterApp.ProductsApp.ProductSearch.js"></script>
 <script type="text/javascript">
 // bootstrap 
 // Important: this needs to be the very last thing, or everything's messed up with order of operations
