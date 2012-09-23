@@ -79,6 +79,22 @@ input[type=text]:focus {
 	clear:both;
 }
 
+.inline-block {
+	display:inline-block;
+}
+
+.loader {
+	display:inline-block;
+	width:28px;
+	height:28px;
+	background:url(../assets/loader.gif) no-repeat;
+	background-size:contain;
+}
+
+.hide {
+	display:none;
+}
+
 .productList {
 	margin:0;
 }

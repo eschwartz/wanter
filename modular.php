@@ -35,7 +35,8 @@
 
 <script id="products-layout" type="text/html">
 	<div id="search">
-		<input type="text" placeholder="Search the Google Shopping API" name="term" id="term" />
+		<input type="text" class="inline-block" placeholder="Search the Google Shopping API" name="term" id="term" />
+		<div class="inline-block"><div class="loader hide"></div></div>
 	</div>
 	<div id="product-list"></div>
 </script>
