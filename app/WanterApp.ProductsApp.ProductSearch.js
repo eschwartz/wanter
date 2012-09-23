@@ -25,7 +25,7 @@ WanterApp.module("ProductsApp.ProductSearch", function(ProductSearch, WanterApp,
 	});
 	
 	// Attach searchView to ProductsApp layout
-	WanterApp.vent.on("layout:rendered", function() {
+	WanterApp.ProductsApp.vent.on("layout:rendered", function() {
 		var searchView = new SearchView()	
 		WanterApp.ProductsApp.layout.search.attachView(searchView);
 	});

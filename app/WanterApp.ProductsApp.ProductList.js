@@ -141,6 +141,7 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 	// Module-level event aggregator
 	ProductList.vent = new Backbone.Marionette.EventAggregator();	
 	
+	// Render and display listview
 	ProductList.showProducts = function(collection) {
 		ProductList.listView = new ProductListView({ collection: collection });
 		WanterApp.ProductsApp.layout.productList.show(ProductList.listView);
@@ -200,9 +201,9 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 	
 	// Handle detail request
 	ProductList.vent.on("detail:request", this.showDetail);
-});
 
-// Show Products on init
-WanterApp.vent.on("layout:rendered", function() {
-	WanterApp.ProductsApp.ProductList.showProducts(WanterApp.ProductsApp.products);
+	// Show Products when layout's ready
+	WanterApp.ProductsApp.vent.on("layout:rendered", function() {
+		WanterApp.ProductsApp.ProductList.showProducts(WanterApp.ProductsApp.products);
+	});
 });

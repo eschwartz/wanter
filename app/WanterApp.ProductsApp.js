@@ -31,7 +31,7 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 		
 		// Trigger rendered event on show
 		ProductsApp.layout.on("show", function() {
-			WanterApp.vent.trigger("layout:rendered");
+			ProductsApp.vent.trigger("layout:rendered");
 		});
 		
 		// Show layout in WanterApp's products region
@@ -110,19 +110,19 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 		if(this.loading) return true;
 		this.loading = true;
 		
-		WanterApp.vent.trigger("goToPage:start", page);
+		ProductsApp.vent.trigger("goToPage:start", page);
 		
 		// Call prototype's goTo method
 		goTo_orig.call(this, page, {
 			success: function(collection, response) {
 				// Let everyone know we're all good
 				self.loading = false;
-				WanterApp.vent.trigger("goToPage:success", collection);
+				ProductsApp.vent.trigger("goToPage:success", collection);
 				callback(collection);
 			},
 			error: function(collection, response) {
 				self.loading = false;
-				WanterApp.vent.trigger("goToPage:error", response);
+				ProductsApp.vent.trigger("goToPage:error", response);
 				console.log("fail.");
 			}
 		});
@@ -134,15 +134,17 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 		WanterApp.ProductsApp.products.search(term);
 	});
 	
+	// just testing
+	WanterApp.ProductsApp.vent.on("goToPage:success", function(collection) {
+		console.log("products: ", collection);
+	});
+	
+	
 });
 
 // Go to first page when the app loads
-WanterApp.addInitializer(function() {
+WanterApp.ProductsApp.addInitializer(function() {
 	WanterApp.ProductsApp.products.goTo(0);
 });
 
 
-// just testing
-WanterApp.vent.on("goToPage:success", function(collection) {
-	console.log("products: ", collection);
-});
