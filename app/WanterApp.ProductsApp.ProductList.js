@@ -12,6 +12,7 @@
 WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Backbone, Marionette, $, _){
 	var _activeDetailView = null;
 	var _perRow = 4;					// Items per row, so we know where to put the detail view
+	var ProductsApp = WanterApp.ProductsApp;
 	
 	var DetailView = Backbone.Marionette.ItemView.extend({
 		template	: '#product-details-template',
@@ -110,17 +111,44 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		}
 	});
 	
+	var noResultsView = Backbone.Marionette.ItemView.extend({
+		template: '#loading-template'
+	});
+	
 	var ProductListView = Backbone.Marionette.CompositeView.extend({
 		template	: '#product-list-template',
 		itemView	: ProductView,
 		
 		ui: {
-			'clearFix'		: '#clearList'
+			'clearFix'		: '#clearList',
+			'message'		: '.messages'
+		},
+		
+		initialize: function() {
+			var self = this;
+			
+			_.bindAll(this);
+			
+			// Show no results messages
+			ProductsApp.vent.on("goToPage:noResults", function() {
+				self.showMessage("Nothing exists like you are describing. Sorry.");
+			});
+			
+			// Show error message
+			ProductsApp.vent.on("goToPage:error", function() {
+				self.showMessage("Er... looks like you might have broken the internet. Awkward.");
+			});
 		},
 		
 		appendHtml: function(collectionView, itemView, index) {
 			// Add the view before our clearfix
 			itemView.$el.insertBefore(collectionView.ui.clearFix);
+		},
+		
+		// Show a message (eg, on error)
+		showMessage: function(msg) {
+				console.log('no res');
+			this.ui.message.html(msg);
 		}
 	});
 	

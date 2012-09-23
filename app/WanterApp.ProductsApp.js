@@ -70,7 +70,7 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 		server_api: {
 			'key'			: 'AIzaSyDx-MNjeT9vIXdcKBvVaXZEOeVPRju8fBE',
 			'country'		: 'US',
-			'q'				: "business casual blazer men's",
+			'q'				: "",
 			'startIndex'	: function() { return (this.currentPage * this.perPage) + 1 },		// Google uses 1 based index
 			'maxResults'	: function() { return this.perPage }
 			
@@ -117,7 +117,15 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 			success: function(collection, response) {
 				// Let everyone know we're all good
 				self.loading = false;
-				ProductsApp.vent.trigger("goToPage:success", collection);
+				if(collection.length < 1) {
+					console.log('no res');
+					ProductsApp.vent.trigger("goToPage:noResults");
+				}
+				else {
+					ProductsApp.vent.trigger("goToPage:success", collection);
+				}
+				
+				ProductsApp.vent.trigger("goToPage:complete", collection);
 				callback(collection);
 			},
 			error: function(collection, response) {
@@ -133,18 +141,7 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 	WanterApp.ProductsApp.vent.on("search:term", function(term) {
 		WanterApp.ProductsApp.products.search(term);
 	});
-	
-	// just testing
-	WanterApp.ProductsApp.vent.on("goToPage:success", function(collection) {
-		console.log("products: ", collection);
-	});
-	
-	
 });
 
-// Go to first page when the app loads
-WanterApp.ProductsApp.addInitializer(function() {
-	WanterApp.ProductsApp.products.goTo(0);
-});
 
 

@@ -29,9 +29,6 @@
 
 <!-- TEMPLATES
  ================== -->
-<script id="loading-template" type="text/html">
-	<div class="loading">Loading...</div>
-</script>
 
 <script id="products-layout" type="text/html">
 	<div id="search">
@@ -43,6 +40,7 @@
 
 <script id="product-list-template" type="text/html">
 	<div class="productList">
+		<h4 class="messages"></h4>
 		<div id="clearList" class="clear"></div>
 	</div>
 </script>

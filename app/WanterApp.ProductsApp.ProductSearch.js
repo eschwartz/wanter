@@ -12,15 +12,23 @@ WanterApp.module("ProductsApp.ProductSearch", function(ProductSearch, WanterApp,
 		},
 		
 		events: {
-			'change term'		: 'search'
+			'change term'		: 'search',
+			'focus term'		: 'clearSearch'
 		},
 		
 		initialize: function() {
+			var self = this;
+			
 			_.bindAll(this);
 			
 			// Manage loading spinner
 			ProductsApp.vent.on("goToPage:start", this.showLoading);
-			ProductsApp.vent.on("goToPage:success", this.hideLoading);
+			ProductsApp.vent.on("goToPage:complete", this.hideLoading);
+			
+			// Display seach term, if mannualy set
+			ProductsApp.vent.on("search:term", function(term) {
+				self.ui.term.val(term);
+			});
 		},
 		
 		showLoading: function() {
@@ -31,6 +39,10 @@ WanterApp.module("ProductsApp.ProductSearch", function(ProductSearch, WanterApp,
 			this.ui.loading.delay(400).fadeOut();
 		},
 		
+		clearSearch: function() {
+			this.ui.term.val("");
+		},
+		
 		search: function() {
 			var term = this.ui.term.val().trim();
 			
@@ -39,8 +51,11 @@ WanterApp.module("ProductsApp.ProductSearch", function(ProductSearch, WanterApp,
 	});
 	
 	// Attach searchView to ProductsApp layout
+	// And enter default search
 	ProductsApp.vent.on("layout:rendered", function() {
 		var searchView = new SearchView()	
-		WanterApp.ProductsApp.layout.search.attachView(searchView);
+		ProductsApp.layout.search.attachView(searchView);
+		
+		WanterApp.ProductsApp.vent.trigger("search:term", "men's business blazer");
 	});
 }); 
