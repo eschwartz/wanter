@@ -88,59 +88,63 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 		/**
 		 * Search by term
 		*/
-		search: function(term) {
+		search: function(term, callback) {
+			var self = this;
+			var options = {};								// ajax fetch options
+			callback = callback || function() {};
+			
+			// Set search term
 			this.server_api.q = term;
 			
-			this.goTo(0);
+			// Prevent searches from stacking up
+			if(this.loading) return true;
+			this.loading = true;
+			
+			ProductsApp.vent.trigger("search:start", term);
+			
+			options.success = function(collection, response) {
+				// Check for no results
+				if(collection.length < 1) {
+					ProductsApp.vent.trigger("search:noResults");
+				}
+				else {
+					ProductsApp.vent.trigger("search:success", collection, response);
+				}
+			};
+			
+			options.error = function(collection, response) {
+				ProductsApp.vent.trigger("search:error", collection, response);
+				console.log('products search failed. aw man...');
+			};
+			
+			options.complete = function(jqXHR, textResponse) {
+				self.loading = false;
+				ProductsApp.vent.trigger("search:complete", jqXHR, textResponse);
+			};
+			
+			// Request first page of results, using Backbone.Paginator.goTo()
+			this.goTo(0, options);
 		}
 	});
 	
 	// Instantiate Products
 	ProductsApp.products = new ProductCollection();
-	
-	
-	// Overwrite products.goTo(), to include event triggers
-	var goTo_orig = ProductsApp.products.goTo;
-	ProductsApp.products.goTo = function(page, callback) {
-		var self = this;
-		
-		callback = callback || function() {};
-		
-		// Check if we're already running a request
-		if(this.loading) return true;
-		this.loading = true;
-		
-		ProductsApp.vent.trigger("goToPage:start", page);
-		
-		// Call prototype's goTo method
-		goTo_orig.call(this, page, {
-			success: function(collection, response) {
-				// Let everyone know we're all good
-				self.loading = false;
-				if(collection.length < 1) {
-					console.log('no res');
-					ProductsApp.vent.trigger("goToPage:noResults");
-				}
-				else {
-					ProductsApp.vent.trigger("goToPage:success", collection);
-				}
-				
-				ProductsApp.vent.trigger("goToPage:complete", collection);
-				callback(collection);
-			},
-			error: function(collection, response) {
-				self.loading = false;
-				ProductsApp.vent.trigger("goToPage:error", response);
-				console.log("fail.");
-			}
-		});
-	}
+
 	
 	
 	// Handle search
-	WanterApp.ProductsApp.vent.on("search:term", function(term) {
+	ProductsApp.vent.on("search:term", function(term) {
 		WanterApp.ProductsApp.products.search(term);
 	});
+	
+	// Handle request more
+	ProductsApp.vent.on("search:more", function() {
+		console.log('search more');
+	});
+});
+
+WanterApp.ProductsApp.addInitializer(function() {
+	WanterApp.ProductsApp.vent.trigger("search:term", "men's blazer");
 });
 
 

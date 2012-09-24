@@ -121,7 +121,11 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		
 		ui: {
 			'clearFix'		: '#clearList',
-			'message'		: '.messages'
+			'message'		: '.messages',
+		},
+		
+		events: {
+			'scroll'		: 'infiniteScroller'
 		},
 		
 		initialize: function() {
@@ -130,12 +134,12 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			_.bindAll(this);
 			
 			// Show no results messages
-			ProductsApp.vent.on("goToPage:noResults", function() {
+			ProductsApp.vent.on("search:noResults", function() {
 				self.showMessage("Nothing exists like you are describing. Sorry.");
 			});
 			
 			// Show error message
-			ProductsApp.vent.on("goToPage:error", function() {
+			ProductsApp.vent.on("search:error", function() {
 				self.showMessage("Er... looks like you might have broken the internet. Awkward.");
 			});
 		},
@@ -149,6 +153,17 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		showMessage: function(msg) {
 				console.log('no res');
 			this.ui.message.html(msg);
+		},
+		
+		infiniteScroller: function() {
+			var totalHeight = this.$el.$('> div').height();
+			var scrollTop = this.$el.height() + this.$el.scrollTop();
+			var margin = 200;
+			
+			// Load more within margin of content
+			if(scrollTop + margin >= totalHeight) {
+				ProductsApp.trigger("search:more");
+			}
 		}
 	});
 	
