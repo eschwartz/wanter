@@ -85,6 +85,11 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 			return tags;
 		},
 		
+		initialize: function() {
+			_.bindAll(this, "search", "addNextPage");
+			Backbone.Paginator.requestPager.prototype.initialize.call(this);
+		},
+		
 		/**
 		 * Search by term
 		*/
@@ -124,8 +129,45 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 			
 			// Request first page of results, using Backbone.Paginator.goTo()
 			this.goTo(0, options);
+		},
+		
+		// Adds the next page's items to the collection
+		addNextPage: function() {
+			var options = {};
+			var self = this;
+			
+			// Prevent stacking
+			if(this.loading) return true;
+			this.loading = true;
+			
+			ProductsApp.vent.trigger("addNextPage:start");
+			
+			// Adds collection, instead of replacing
+			options.add = true;
+			
+			options.success = function(collection, response) {
+				if(collection.length < 1) {
+					ProductsApp.vent.trigger("addNextPage:noResults");
+				}
+				else {
+					ProductsApp.vent.trigger("addNextPage:success");
+				}
+			}
+			
+			options.error = function(collection, response) {
+				ProductsApp.vent.trigger("addNextPage:error", collection, response);
+				console.log("products.addNextPage failed");
+			}
+			
+			options.complete = function(jqXHR, textResponse) {
+				self.loading = false;
+				ProductsApp.vent.trigger("addNextPage:complete");
+			}
+			
+			this.requestNextPage(options);
 		}
 	});
+	
 	
 	// Instantiate Products
 	ProductsApp.products = new ProductCollection();

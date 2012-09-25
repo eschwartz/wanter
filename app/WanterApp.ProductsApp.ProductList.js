@@ -13,6 +13,14 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 	var _activeDetailView = null;
 	var _perRow = 4;					// Items per row, so we know where to put the detail view
 	var ProductsApp = WanterApp.ProductsApp;
+
+	// current instance of the ProductListView
+	ProductList.listView = null;			
+	
+	// Module-level event aggregator
+	ProductList.vent = new Backbone.Marionette.EventAggregator();	
+	
+	
 	
 	var DetailView = Backbone.Marionette.ItemView.extend({
 		template	: '#product-details-template',
@@ -177,17 +185,13 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		return $lastItemInRow;
 	}
 	
-	
-	// current instance of the ProductListView
-	ProductList.listView = null;			
-	
-	// Module-level event aggregator
-	ProductList.vent = new Backbone.Marionette.EventAggregator();	
+		
 	
 	// Render and display listview
 	ProductList.showProducts = function(collection) {
 		ProductList.listView = new ProductListView({ collection: collection });
 		WanterApp.ProductsApp.layout.productList.show(ProductList.listView);
+		ProductList.vent.trigger("productList:rendered");
 	};
 	
 	// Handle displaying detail views in the product lsit
@@ -242,11 +246,37 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 	};
 	
 	
+	
+	// Set up infinite scroll functionality
+	ProductList.initializeInfiniteScroll = function() {
+		ProductList.vent.on("scroll:bottom", ProductsApp.products.addNextPage);
+		
+		// Trigger window scroll event, for infitinte scrolling
+		$(window).scroll(function() {
+			var scrollPos = $(window).scrollTop();
+			var bottomPos = $(document).height() - $(window).height();
+			var buffer = 200;
+			
+			// Within buffer px of bottom
+			if(scrollPos + buffer >= bottomPos) {
+				ProductList.vent.trigger("scroll:bottom");
+			}
+		});
+	}
+	
+	
+	
 	// Handle detail request
-	ProductList.vent.on("detail:request", this.showDetail);
+	this.vent.on("detail:request", this.showDetail);
 
 	// Show Products when layout's ready
 	WanterApp.ProductsApp.vent.on("layout:rendered", function() {
 		WanterApp.ProductsApp.ProductList.showProducts(WanterApp.ProductsApp.products);
 	});
+	
+	this.vent.on("productList:rendered", this.initializeInfiniteScroll);
 });
+
+
+
+
