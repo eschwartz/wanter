@@ -225,3 +225,26 @@ input[type=text]:focus {
   box-shadow:0 0.333em 0 #000;
   filter:progid:DXImageTransform.Microsoft.dropshadow(OffX=0, OffY=3, Color='000', Positive='true');
 }	
+
+
+/* Flash Messages */
+#flash-container {
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    text-align: center;
+}
+	.flash {
+		padding: 10px 15px;
+		background: rgba(0, 0, 0, .85);
+		display: inline-block !important;
+		color: #fff;
+		font-family: sans-serif;
+		border-radius: 10px;
+		border-bottom-left-radius: 0px;
+		border-bottom-right-radius: 0px;
+		box-shadow: 0px 0px 10px 2px rgba(100,100,100, .2);
+		border: 1px solid rgba(255,255,255, .2);
+		border-bottom: none;
+	}

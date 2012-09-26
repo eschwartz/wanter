@@ -25,10 +25,14 @@
 
 <div id="products" class="container"></div>
 
+<div id="flash-container">
+</div>
+
 
 
 <!-- TEMPLATES
  ================== -->
+ 
 
 <script id="products-layout" type="text/html">
 	<div id="search">
@@ -66,11 +70,17 @@
 </script>
 
 
+<script id="flash-template" type="text/html">
+	<%=value %>
+</script>
+
+
 <!-- END TEMPLATES
  ================== -->
 
 
 <script type="text/javascript" src="app/WanterApp.js"></script>
+<script type="text/javascript" src="app/WanterApp.Flash.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.ProductList.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.ProductSearch.js"></script>
