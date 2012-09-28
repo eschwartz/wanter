@@ -87,9 +87,11 @@
 <script type="text/javascript">
 // bootstrap 
 // Important: this needs to be the very last thing, or everything's messed up with order of operations
-WanterApp.start();
+$(document).ready(function() {
+	WanterApp.start();
+});
 </script>
 
-
+<div id="flash-area"></div>
 </body>
 </html>

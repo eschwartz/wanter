@@ -238,7 +238,7 @@ input[type=text]:focus {
 	.flash {
 		padding: 10px 15px;
 		background: rgba(0, 0, 0, .85);
-		display: inline-block !important;
+		display: inline-block;
 		color: #fff;
 		font-family: sans-serif;
 		border-radius: 10px;

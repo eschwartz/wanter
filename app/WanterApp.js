@@ -5,6 +5,6 @@ var WanterApp = new Backbone.Marionette.Application();
 
 // Set App Regions
 WanterApp.addRegions({
-	flash: '#flash-container',
+	flashRegion: '#flash-area',
 	products: '#products'
 });

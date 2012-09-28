@@ -163,7 +163,7 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 				self.loading = false;
 				ProductsApp.vent.trigger("addNextPage:complete");
 			}
-			
+
 			this.requestNextPage(options);
 		}
 	});
@@ -174,14 +174,25 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 
 	
 	
-	// Handle search
+	// Run search on term change
 	ProductsApp.vent.on("search:term", function(term) {
 		WanterApp.ProductsApp.products.search(term);
 	});
 	
-	// Handle request more
-	ProductsApp.vent.on("search:more", function() {
-		console.log('search more');
+	// Handle Search flash messages
+	ProductsApp.vent.on("search:start", function() {
+		WanterApp.Flash.setFlash("product:search", "Loading products...");
+	});
+	ProductsApp.vent.on("search:complete", function() {
+		WanterApp.Flash.closeFlash("product:search");
+	});
+	
+	// Handle infinite scroll flash messages
+	ProductsApp.vent.on("addNextPage:start", function() {
+		WanterApp.Flash.setFlash("product:addNextPage", "Loading more...");
+	});
+	ProductsApp.vent.on("addNextPage:complete", function() {
+		WanterApp.Flash.closeFlash("product:addNextPage");
 	});
 });
 
