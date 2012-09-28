@@ -95,8 +95,21 @@ WanterApp.module("Flash", function(ProductsApp, WanterApp, Backbone, Marionette,
 		closeFlash: function(key) {
 			var flash = _flashCollection.get(key);
 			_flashCollection.remove(flash);
+		},
+		
+		// Show a flash for a set amount of time, then close automatically
+		timedFlash: function(key, value, duration) {
+			var self = this;
+			
+			duration = duration || 800;
+			
+			this.setFlash(key, value);
+			window.setTimeout(function() {
+				self.closeFlash(key);
+			}, duration);
 		}
 	});
+	_.bindAll(this);
 	
 	
 	/*

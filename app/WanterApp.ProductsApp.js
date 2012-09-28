@@ -212,11 +212,8 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 		window.setTimeout(function() {
 			WanterApp.Flash.closeFlash("cart:saving");
 		
-			WanterApp.Flash.setFlash("cart:added", "Product added to cart");
+			WanterApp.Flash.timedFlash("cart:added", "Product added to cart");
 			// would be cool to have a "timedFlash" message that dissapeared on its own.
-			window.setTimeout(function() {
-				WanterApp.Flash.closeFlash("cart:add");
-			}, 800);
 		}, 800);
 	});
 });
