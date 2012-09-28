@@ -48,7 +48,7 @@ WanterApp.module("Flash", function(ProductsApp, WanterApp, Backbone, Marionette,
 			this.$el.appendTo(this.$el.parent());
 			
 			// Close (give some time to prevent jumpiness)
-			window.setTimeout(resolve, 800);
+			this.$el.delay(800).fadeOut(150, resolve);
 			
 			return false;
 		}
@@ -64,7 +64,7 @@ WanterApp.module("Flash", function(ProductsApp, WanterApp, Backbone, Marionette,
 			
 			// Show only if it's first
 			if(index === 0) {
-				itemView.$el.show();
+				itemView.$el.fadeIn(150);
 			}
 		}
 	});

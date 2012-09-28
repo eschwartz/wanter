@@ -181,7 +181,7 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 	
 	// Handle Search flash messages
 	ProductsApp.vent.on("search:start", function() {
-		WanterApp.Flash.setFlash("product:search", "Loading products...");
+		WanterApp.Flash.setFlash("product:search", "Searching for products...");
 	});
 	ProductsApp.vent.on("search:complete", function() {
 		WanterApp.Flash.closeFlash("product:search");
@@ -189,7 +189,7 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 	
 	// Handle infinite scroll flash messages
 	ProductsApp.vent.on("addNextPage:start", function() {
-		WanterApp.Flash.setFlash("product:addNextPage", "Loading more...");
+		WanterApp.Flash.setFlash("product:addNextPage", "Loading more products...");
 	});
 	ProductsApp.vent.on("addNextPage:complete", function() {
 		WanterApp.Flash.closeFlash("product:addNextPage");
