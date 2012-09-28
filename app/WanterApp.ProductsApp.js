@@ -20,7 +20,8 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 		template: '#products-layout',
 		regions: {
 			search: '#search',
-			productList: '#product-list'
+			productList: '#product-list',
+			cart: '#cart'
 		}
 	});
 	
@@ -168,11 +169,18 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 		}
 	});
 	
+	var CartCollection = Backbone.Collection.extend({
+		model: Product
+	});
+	
 	
 	// Instantiate Products
 	ProductsApp.products = new ProductCollection();
+	ProductsApp.cart = new CartCollection();
 
-	
+	/**
+	 * Event Handling
+	*/
 	
 	// Run search on term change
 	ProductsApp.vent.on("search:term", function(term) {
@@ -193,6 +201,23 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 	});
 	ProductsApp.vent.on("addNextPage:complete", function() {
 		WanterApp.Flash.closeFlash("product:addNextPage");
+	});
+	
+	// Handle Shopping Cart events
+	ProductsApp.vent.on("cart:add", function(model) {
+		ProductsApp.cart.add(model);
+		
+		WanterApp.Flash.setFlash("cart:saving", "Saving...");
+		// Should actually run a sync here...
+		window.setTimeout(function() {
+			WanterApp.Flash.closeFlash("cart:saving");
+		
+			WanterApp.Flash.setFlash("cart:added", "Product added to cart");
+			// would be cool to have a "timedFlash" message that dissapeared on its own.
+			window.setTimeout(function() {
+				WanterApp.Flash.closeFlash("cart:add");
+			}, 800);
+		}, 800);
 	});
 });
 

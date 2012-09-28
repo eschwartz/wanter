@@ -144,6 +144,7 @@ input[type=text]:focus {
 	margin: -5px 0 20px 0;
 	border-top:1px solid #ccc;
 	border-bottom:1px solid #ccc;
+	cursor:default;
 }
 	.item.productDetails .image img {
 		width:400px;
@@ -189,6 +190,7 @@ input[type=text]:focus {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 
+	cursor:pointer;
 
   border:none;
   -webkit-appearance: none;
@@ -204,6 +206,7 @@ input[type=text]:focus {
   color: #FFFFFF;
 
 }
+
 
 .btn:hover, .btn:visited {
   color: #fff;

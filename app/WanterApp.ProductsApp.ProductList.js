@@ -28,7 +28,12 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		elHeight	: null,
 		
 		ui: {
-			container: '.details-container'
+			container: '.details-container',
+			addToCart: '.addToCart'
+		},
+		
+		events: {
+			'click addToCart': 'addToCart'
 		},
 		
 		templateHelpers: {
@@ -38,6 +43,8 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		},
 		
 		initialize: function() {
+			_.bindAll(this);
+			
 			// Close the detail view when we reset the collection (eg. on search, change page)
 			this.bindTo(this.model.collection, "reset", this.close);
 		},
@@ -79,6 +86,11 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			this.$el.slideUp(close);
 			
 			return false;
+		},
+		
+		addToCart: function() {
+				console.log('click');
+			ProductsApp.vent.trigger("cart:add", this.model);
 		}
 	});
 	

@@ -35,6 +35,7 @@
  
 
 <script id="products-layout" type="text/html">
+	<div id="cart"></div>
 	<div id="search">
 		<input type="text" class="inline-block" placeholder="Search the Google Shopping API" name="term" id="term" />
 		<div class="inline-block"><div class="loader hide"></div></div>
@@ -53,6 +54,10 @@
 	<img src="<%=thumbSrc() %>" alt="<%=title %>" />
 </script>
 
+<script id="cart-item-template" type="text/html" />
+	<img src="<%=thumbSrc() %>" alt="<%=title %>" style="width:50px; height:50px"/>
+</script>
+
 <script id="product-details-template" type="text/html">
 	<div class="details-container">
 		<div class="left image">
@@ -61,7 +66,7 @@
 		<div class="left content">
 			<h2><%=title %></h2>
 			<h5><%=brand %></h5>
-			<button class="btn">Add to Gift</button>
+			<button class="btn addToCart">Add to Gift</button>
 			<p><%=description %></p>
 			<p><a href="<%=link %>" target="_blank">Learn more</a></p>
 		</div>   
@@ -84,6 +89,7 @@
 <script type="text/javascript" src="app/WanterApp.ProductsApp.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.ProductList.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.ProductSearch.js"></script>
+<script type="text/javascript" src="app/WanterApp.ProductsApp.ShoppingCart.js"></script>
 <script type="text/javascript">
 // bootstrap 
 // Important: this needs to be the very last thing, or everything's messed up with order of operations
