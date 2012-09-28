@@ -64,7 +64,7 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 		paginator_ui: {
 			firstPage	: 0,
 			currentPage	: 0,
-			perPage		: 20,
+			perPage		: 50,
 			totalPages	: 10			// a default, in case we fail to calculate the total pages
 		},
 		server_api: {

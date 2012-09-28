@@ -21,24 +21,11 @@ WanterApp.module("ProductsApp.ProductSearch", function(ProductSearch, WanterApp,
 			
 			_.bindAll(this);
 			
-			// Manage loading spinner
-			ProductsApp.vent.on("search:start", this.showLoading);
-			ProductsApp.vent.on("search:complete", this.hideLoading);
-			
 			// Display seach term, if mannualy set
 			ProductsApp.vent.on("search:term", function(term) {
 				self.ui.term.val(term);
 			});
 		},
-		
-		showLoading: function() {
-			this.ui.loading.fadeIn();
-		},
-		
-		hideLoading: function() {
-			this.ui.loading.delay(400).fadeOut();
-		},
-		
 		clearSearch: function() {
 			this.ui.term.val("");
 		},
