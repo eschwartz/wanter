@@ -76,14 +76,8 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 	this.vent.on("cart:add", function(model) {
 		ProductsApp.cart.add(model);
 		
-		WanterApp.Flash.setFlash("cart:saving", "Saving...");
-		// Should actually run a sync here...
-		window.setTimeout(function() {
-			WanterApp.Flash.closeFlash("cart:saving");
-		
-			WanterApp.Flash.timedFlash("cart:added", "Product added to cart");
-			// would be cool to have a "timedFlash" message that dissapeared on its own.
-		}, 800);
+		WanterApp.Flash.timedFlash("cart:saving", "Saving...");						// Should actually run a sync here...
+		WanterApp.Flash.timedFlash("cart:added", "Product added to cart");
 	});
 });
 

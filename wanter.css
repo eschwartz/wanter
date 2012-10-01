@@ -52,6 +52,11 @@ input[type=text]:focus {
   border-radius:5px;
 }
 
+.clearfix:after {
+  content: "";
+  display: table;
+  clear: both;
+}
 #search {
 	padding:10px 5px;
 }
@@ -179,8 +184,8 @@ input[type=text]:focus {
 	}
 	
 #sidebar {
-	width:110px;
-	padding: 0 20px;
+	width:120px;
+	padding: 0 15px;
 }
 	
 #cart {
@@ -202,7 +207,7 @@ input[type=text]:focus {
 		list-style:none;
 		width:100%;
 		border: 2px solid transparent;
-		padding: 8px;
+		padding: 10px;
 		box-sizing: border-box;
 		border-radius: 5px;
 	}
@@ -228,7 +233,8 @@ input[type=text]:focus {
 			background:#fff;
 			border: 1px solid #999;
 			border-radius:2px;
-			display:inline-block; #009b2d;
+			float:left;
+			margin:2px;
 		}
 			#cart_items a {
 				border:none;

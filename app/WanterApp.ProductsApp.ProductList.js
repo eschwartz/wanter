@@ -89,7 +89,6 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		},
 		
 		addToCart: function() {
-				console.log('click');
 			ProductsApp.vent.trigger("cart:add", this.model);
 		}
 	});
