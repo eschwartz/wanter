@@ -23,36 +23,37 @@
 <h2>Following the <a href="http://davidsulc.com/blog/2012/05/06/tutorial-a-full-backbone-marionette-application-part-1/" target="_blank">Marionette App Tutorial</a></h2>
 
 <div class="container">
-	<div id="products" class="left"></div>
-    <div id="sidebar" class="left">
-        <div id="cart_summary">
-            <div id="cartList_empty" class="hide">
-                <img src="add.png" />
-                <p>Add</p>
-                <p style="font-weight:bold; font-size:20px;">16</p>
-                <p>products</p>
+	<div id="products-region" class="container">
+      <!--  <div id="sidebar" class="left">
+                <div id="cart">
+                    <div id="cartList_empty" class="hide">
+                        <img src="add.png" />
+                        <p>Add</p>
+                        <p style="font-weight:bold; font-size:20px;">16</p>
+                        <p>products</p>
+                    </div>
+                    
+                    <ul id="cart_items" class="added">
+                        <li><a href="#"><img src="http://ak1.ostkcdn.com/images/products/L14030895.jpg" /></a></li>
+                        <li><a href="#"><img src="http://piperlime.gap.com/webcontent/0004/834/423/cn4834423.jpg" /></a></li>
+                        <li><a hre="#"><img src="http://www.6pm.com/images/z/1/6/3/8/4/9/1638490-p-MULTIVIEW.jpg" /></a></li>
+                        <li class="empty"></li>
+                        <li class="empty"></li>
+                        <li class="empty"></li>
+                        <li class="empty"></li>
+                        <li class="empty"></li>
+                        <li class="empty"></li>
+                        <li class="empty"></li>
+                        <li class="empty"></li>
+                        <li class="empty"></li>
+                        <li class="empty"></li>
+                        <li class="empty"></li>
+                        <li class="empty"></li>
+                        <li class="empty"></li>
+                    </ul>
+                </div>
             </div>
-            
-            <ul id="cart_items" class="added">
-            	<li><a href="#"><img src="http://ak1.ostkcdn.com/images/products/L14030895.jpg" /></a></li>
-                <li><a href="#"><img src="http://piperlime.gap.com/webcontent/0004/834/423/cn4834423.jpg" /></a></li>
-                <li><a hre="#"><img src="http://www.6pm.com/images/z/1/6/3/8/4/9/1638490-p-MULTIVIEW.jpg" /></a></li>
-                <li class="empty"></li>
-                <li class="empty"></li>
-                <li class="empty"></li>
-                <li class="empty"></li>
-                <li class="empty"></li>
-                <li class="empty"></li>
-                <li class="empty"></li>
-                <li class="empty"></li>
-                <li class="empty"></li>
-                <li class="empty"></li>
-                <li class="empty"></li>
-                <li class="empty"></li>
-                <li class="empty"></li>
-            </ul>
-            
-        </div>
+        </div>-->
     </div>
     <div class="clear"></div>
 </div>
@@ -67,17 +68,17 @@
  
 
 <script id="products-layout" type="text/html">
-	<div id="cart"></div>
 	<div id="search">
 		<input type="text" class="inline-block" placeholder="Search the Google Shopping API" name="term" id="term" />
-		<div class="inline-block"><div class="loader hide"></div></div>
 	</div>
-	<div id="product-list"></div>
+	<div id="product-list" class="left"></div>
+	<div id="sidebar" class="left">
+		<div id="cart"></div>
+	</div>
 </script>
 
 <script id="product-list-template" type="text/html">
 	<div class="productList">
-		<h4 class="messages"></h4>
 		<div id="clearList" class="clear"></div>
 	</div>
 </script>
@@ -86,9 +87,7 @@
 	<img src="<%=thumbSrc() %>" alt="<%=title %>" />
 </script>
 
-<script id="cart-item-template" type="text/html" />
-	<img src="<%=thumbSrc() %>" alt="<%=title %>" style="width:50px; height:50px"/>
-</script>
+
 
 <script id="product-details-template" type="text/html">
 	<div class="details-container">
@@ -107,6 +106,28 @@
 </script>
 
 
+<!-- Cart Templates
+ ===================== -->
+<!-- Cart Item  -->
+<script id="cart-item-template" type="text/html" >
+	<a href="#"><img src="<%=thumbSrc() %>" alt="<%=title %>" /></a>
+</script>
+
+<!-- Empty cart -->
+<script id="cart-empty-template" type="text/html" >
+	<div id="cartList_empty">
+		<img src="add.png" />
+		<p>Add</p>
+		<p style="font-weight:bold; font-size:20px;">16</p>
+		<p>products</p>
+	</div>	
+</script>
+
+
+ 
+
+<!-- Flash Message Template
+ =========================== -->
 <script id="flash-template" type="text/html">
 	<%=value %>
 </script>
@@ -118,6 +139,7 @@
 
 <script type="text/javascript" src="app/WanterApp.js"></script>
 <script type="text/javascript" src="app/WanterApp.Flash.js"></script>
+<script type="text/javascript" src="app/WanterApp.ProductsApp.products.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.ProductList.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.ProductSearch.js"></script>

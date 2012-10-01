@@ -16,15 +16,25 @@ WanterApp.module("ProductsApp.ShoppingCart", function(ProductsApp, WanterApp, Ba
 		}
 	});
 	
+	var _CartEmptyView = Backbone.Marionette.ItemView.extend({
+		template: '#cart-empty-template',
+	});
+	
 	var _cartListView = Backbone.Marionette.CollectionView.extend({
 		itemView: _CartItemView,
-		tagName:'ul'
+		emptyView: _CartEmptyView,
+		tagName:'ul',
+		id: "cart_item",
+		
+		// Classes to apply to list when item is added or removed
+		addedClass: "added",
+		removedClass: "removed"
 	});
 	
 	// Render and display cart
 	this.showCart = function(cartCollection) {
-		var listView = new _cartListView({ collection: cartCollection });
-		ProductsApp.layout.cart.show(listView);
+		var cartListView = new _cartListView({ collection: cartCollection });
+		ProductsApp.layout.cart.show(cartListView);
 	}
 	
 	ProductsApp.vent.on("layout:rendered", function() {
