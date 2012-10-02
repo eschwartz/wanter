@@ -67,7 +67,11 @@
 		<div class="left content">
 			<h2><%=title %></h2>
 			<h5><%=brand %></h5>
-			<button class="btn addToCart">Add to Gift</button>
+			
+			<button class="btn toggleCart">
+				<%=inCart? "Remove from Cart": "Add to Cart" %>
+			</button>
+			
 			<p><%=description %></p>
 			<p><a href="<%=link %>" target="_blank">Learn more</a></p>
 		</div>   

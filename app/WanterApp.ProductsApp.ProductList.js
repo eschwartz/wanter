@@ -29,11 +29,11 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		
 		ui: {
 			container: '.details-container',
-			addToCart: '.addToCart'
+			toggleCart: '.toggleCart'
 		},
 		
 		events: {
-			'click addToCart': 'addToCart'
+			'click toggleCart': 'toggleCart'
 		},
 		
 		templateHelpers: {
@@ -47,6 +47,9 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			
 			// Close the detail view when we reset the collection (eg. on search, change page)
 			this.bindTo(this.model.collection, "reset", this.close);
+			
+			// Change toggleCart button text on add/remove to cart
+			this.bindTo(this.model, "change:inCart", this.renderToggleCart);
 		},
 		
 		beforeRender: function(render) {
@@ -80,6 +83,7 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			this.ui.container.animate({height: newHeight}, function() {
 				self.ui.container.fadeTo(300, 1);
 			});
+			
 		},
 			
 		beforeClose: function(close) {
@@ -88,14 +92,22 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			return false;
 		},
 		
-		addToCart: function() {
-			ProductsApp.vent.trigger("cart:add", this.model);
+		// Refresh toggleCart button
+		renderToggleCart: function() {
+			var text = this.model.get('inCart')? "Remove from Cart": "Add to Cart";
+			this.ui.toggleCart.text(text);
+		},
+		
+		// Adds or removed from cart
+		toggleCart: function() {
+			var action = this.model.get('inCart')? "remove": "add";
+			ProductsApp.vent.trigger("cart:" + action, this.model);
 		}
 	});
 	
 	var ProductView = Backbone.Marionette.ItemView.extend({
 		template: '#product-template',
-		className: 'item',
+		className: 'item thumb',
 		activeClassName: 'active',
 		
 		templateHelpers: {

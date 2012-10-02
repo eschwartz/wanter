@@ -106,17 +106,20 @@ input[type=text]:focus {
 	background-position:center;
 	background-repeat:no-repeat;
 	background-size:18px;
+	
+	opacity:.95;
+	
 	display:block;
 	width:16px;
 	height:16px;
 	
 	padding:5px;
-	border:1px solid #aaa;
+	border:1px solid #e6e6e6;
 	
 }
 	.check:hover, .cross:hover {
-		border-color:#e6e6e6;
 		box-shadow:1px 1px 10px 2px rgba(255, 255, 235, .2);
+		opacity:1.0;
 	}
 
 	.check {
@@ -206,10 +209,7 @@ input[type=text]:focus {
 		padding-bottom:20px;
 		margin:0;
 	}
-	.item .btn {
-		width:180px;
-	}
-	.item .toggleCart {
+	.item.thumb .toggleCart {
 		position:absolute;
 		top:-3px;
 		right:-3px;	
@@ -284,7 +284,7 @@ input[type=text]:focus {
 	
 	
 .btn {
-	padding:10px 0;
+	padding:10px 20px;
 
   display:inline-block;
 
