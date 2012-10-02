@@ -43,6 +43,7 @@ WanterApp.module("ProductsApp.ShoppingCart", function(ProductsApp, WanterApp, Ba
 			
 			// Handle add/show classes
 			this.bindTo(this.collection, "add", this.showAddedClass);
+			this.bindTo(this.collection, "remove", this.showRemovedClass);
 		},
 		
 		showAddedClass: function() {
@@ -57,7 +58,7 @@ WanterApp.module("ProductsApp.ShoppingCart", function(ProductsApp, WanterApp, Ba
 			var self = this;
 			
 			this.$el.removeClass(this.removedClass + " " + this.addedClass);
-			window.setTimeOut(function() {
+			window.setTimeout(function() {
 				self.$el.addClass(self.removedClass);
 			}, 15);
 		},
@@ -74,6 +75,13 @@ WanterApp.module("ProductsApp.ShoppingCart", function(ProductsApp, WanterApp, Ba
 				this.$el.append(emptyView.$el.clone());
 			}
 		
+		},
+		
+		// Overwrite: Remove empty cells with empty view
+		showEmptyView: function() {
+			this.$el.empty();
+			
+			Backbone.Marionette.CollectionView.prototype.showEmptyView.apply(this, arguments);
 		},
 		
 		// Manage empty cells

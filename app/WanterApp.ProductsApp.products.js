@@ -8,6 +8,9 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 		idAttribute: "googleId",
 		parse: function(response) {
 			return response.product;
+		},
+		defaults: {
+			inCart: false
 		}
 	});
 	

@@ -105,12 +105,24 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			}
 		},
 		
+		ui: {
+			toggleCart: '.toggleCart'
+		},
+		
 		events: {
-			'click'			: 'handleReqDetail'
+			'click'					: 'handleReqDetail',
+			'mouseenter'			: 'showToggleCart',
+			'mouseleave'			: 'hideToggleCart',
+			'click toggleCart'		: 'toggleCart'
 		},
 		
 		initialize: function() {
-			_.bindAll(this, 'handleReqDetail');
+			var self = this;
+			
+			_.bindAll(this);
+			
+			// Change toggle cart value, and flash
+			this.bindTo(this.model, "change:inCart", this.toggleToggleCart);
 		},
 		
 		handleReqDetail: function() {
@@ -127,6 +139,39 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 					self.$el.delay(100).fadeTo(800, 1);
 				});
 			});
+			
+			// Don't animate on re-render
+			this.onRender = function() {};
+		},
+		
+		// Add or remove from cart
+		toggleCart: function(e) {
+			// Prevent other item click events from running
+			e.stopPropagation();
+			
+			cartAction = this.model.get('inCart')? "remove": "add";
+			ProductsApp.vent.trigger("cart:" + cartAction, this.model);
+			
+			// Change toggle icon
+			this.toggleToggleCart();
+		},
+		
+		// Change the taggleCart class (yes, an awesome method name, I know)
+		toggleToggleCart: function() {
+			var toggleClass = this.model.get('inCart')? "cross": "check";
+			var self = this;
+			
+			this.ui.toggleCart.removeClass('check cross').addClass(toggleClass);
+			
+			this.showToggleCart();
+			window.setTimeout(this.hideToggleCart, 3000);
+		},
+		
+		showToggleCart: function() {
+			this.ui.toggleCart.stop(true, true).delay(100).fadeIn(100);
+		},
+		hideToggleCart: function() {
+			this.ui.toggleCart.stop(true, true).fadeOut(100);
 		}
 	});
 	

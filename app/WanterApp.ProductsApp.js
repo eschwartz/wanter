@@ -75,9 +75,17 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 	// Handle Shopping Cart events
 	this.vent.on("cart:add", function(model) {
 		ProductsApp.cart.add(model);
+		model.set('inCart', true);
 		
 		WanterApp.Flash.timedFlash("cart:saving", "Saving...");						// Should actually run a sync here...
 		WanterApp.Flash.timedFlash("cart:added", "Product added to cart");
+	});
+	this.vent.on("cart:remove", function(model) {
+		ProductsApp.cart.remove(model);
+		model.set('inCart', false);
+		
+		WanterApp.Flash.timedFlash("cart:saving", "Saving...");
+		WanterApp.Flash.timedFlash("cart:removed", "Product removed from cart");
 	});
 });
 

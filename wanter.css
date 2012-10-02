@@ -101,6 +101,32 @@ input[type=text]:focus {
 	display:none;
 }
 
+.check, .cross {
+	background-color:#fff;
+	background-position:center;
+	background-repeat:no-repeat;
+	background-size:18px;
+	display:block;
+	width:16px;
+	height:16px;
+	
+	padding:5px;
+	border:1px solid #aaa;
+	
+}
+	.check:hover, .cross:hover {
+		border-color:#e6e6e6;
+		box-shadow:1px 1px 10px 2px rgba(255, 255, 235, .2);
+	}
+
+	.check {
+		background-image:url(check.png);
+	}
+	
+	.cross {
+		background-image:url(cross.png);
+	}
+
 
 #products {
 }
@@ -153,10 +179,11 @@ input[type=text]:focus {
 	width:100%;
 	box-sizing:border-box;
 	padding:30px;
-	margin: -5px 0 20px 0;
+	margin: -15px 0 20px 0;
 	border-top:1px solid #ccc;
 	border-bottom:1px solid #ccc;
 	cursor:default;
+	position:relative;
 }
 	.item.productDetails .image img {
 		width:300px;
@@ -181,6 +208,12 @@ input[type=text]:focus {
 	}
 	.item .btn {
 		width:180px;
+	}
+	.item .toggleCart {
+		position:absolute;
+		top:-3px;
+		right:-3px;	
+		display:none;
 	}
 	
 #sidebar {
