@@ -280,7 +280,7 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		// Give the active class to the appropriate itemView
 		var setActive = function() {
 			// Set active item
-			$('.' + itemView.className).removeClass(itemView.activeClassName);
+			$('.item').removeClass(itemView.activeClassName);
 			itemView.$el.addClass(itemView.activeClassName);
 		}
 		
@@ -290,7 +290,7 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			_activeDetailView = null;
 			
 			// Remove active class on itemView
-			$('.' + itemView.className).removeClass(itemView.activeClassName);
+			$('.item').removeClass(itemView.activeClassName);
 		}
 		
 		// No detailView open --> render a new one
