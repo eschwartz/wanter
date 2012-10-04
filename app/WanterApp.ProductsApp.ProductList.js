@@ -20,21 +20,7 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 	// Module-level event aggregator
 	ProductList.vent = new Backbone.Marionette.EventAggregator();	
 	
-	
-	
-	var DetailView = Backbone.Marionette.ItemView.extend({
-		template	: '#product-details-template',
-		className	: 'productDetails item',
-		elHeight	: null,
-		
-		ui: {
-			container: '.details-container',
-			toggleCart: '.toggleCart'
-		},
-		
-		events: {
-			'click toggleCart': 'toggleCart'
-		},
+	var _baseProductView = Backbone.Marionette.ItemView.extend({
 		
 		templateHelpers: {
 			imageSrc: function() {
@@ -42,16 +28,58 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			}
 		},
 		
-		initialize: function() {
+		// Don't forget to call _baseProductView.prototype.initialize.call(this) in child objects!
+		initiliaze: function() {
 			_.bindAll(this);
+			
+			// Delegate cartBtn UI
+			// In a way that makes extending from this class easier (so I don't have to call _baseView.prototype.... everywhere)
+			this.ui = _.extend({}, {
+				cartBtn: '.toggleCart'
+			}, this.ui);
+			this.delegateEvents({
+				'click cartBtn':		'toggleItemInCart'
+			});
+			
+			// Change cartBtn on add/remove from cart
+			this.bindTo(this.model, "change:inCart", this.toggleCartBtnUI);
+		},
+		
+		// Overwrite this method
+		// to change cart button from "Add" to "Remove", or vice versa
+		toggleCartBtnUI: function() {
+			// eg: this.ui.cartBtn.toggleClass('add');
+		},
+		
+		// Add or removed the item from the cart
+		toggleItemInCart: function(e) {
+			e.stopPropagation();
+			
+			cartAction = this.model.get('inCart')? "remove": "add";
+			ProductsApp.vent.trigger("cart:" + cartAction, this.model);			
+		}
+	});
+	
+	var DetailView = _baseProductView.extend({
+		template	: '#product-details-template',
+		className	: 'productDetails item',
+		elHeight	: null,
+		
+		ui: {
+			container: '.details-container'
+		},
+		
+		initialize: function() {
+			// Run parent initialize method
+			_baseProductView.prototype.initiliaze.apply(this, arguments);
 			
 			// Close the detail view when we reset the collection (eg. on search, change page)
 			this.bindTo(this.model.collection, "reset", this.close);
 			
-			// Change toggleCart button text on add/remove to cart
-			this.bindTo(this.model, "change:inCart", this.renderToggleCart);
+			this.bindTo(this.model, "change:inCart", this.toggleCartBtnUI);
 		},
 		
+		// Save height (for resizing height in onRender) then fade out
 		beforeRender: function(render) {
 			//Check that container is rendered
 			if(this.ui.container instanceof $) {
@@ -61,14 +89,25 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 				
 				// Fade out container, then render
 				this.ui.container.fadeTo(300, 0, render); 
-				
-				return false;
 			}
 			
-			this.elHeight = 0;
+			// Container not rendered --> height to zero (first display in row)
+			else {
+				this.elHeight = 0;
+				render();
+			}
+				
+			return false;
 		},
 		
+		// Resize container to new height, then fade in content
 		onRender: function() {
+			// Because someone changed our model, we need to make sure everything is bound correctly
+			// Making me think this is more hack-ish than I would like....
+			// Actually, we're ruining all of Marionette's cleanup benefits by doing it like this. 
+			// We really need to close the view, and think of another way to handle rows....
+			this.initialize();
+			
 			// Calculate new height
 			var self = this;
 			var newHeight = this.ui.container.height();
@@ -85,24 +124,20 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			});
 			
 		},
-			
+		
+		// Slideup the container	
 		beforeClose: function(close) {
 			this.$el.slideUp(close);
 			
 			return false;
 		},
 		
-		// Refresh toggleCart button
-		renderToggleCart: function() {
+		// Change cartBtn text between "Add"/"Remove"
+		toggleCartBtnUI: function() {
 			var text = this.model.get('inCart')? "Remove from Cart": "Add to Cart";
-			this.ui.toggleCart.text(text);
-		},
-		
-		// Adds or removed from cart
-		toggleCart: function() {
-			var action = this.model.get('inCart')? "remove": "add";
-			ProductsApp.vent.trigger("cart:" + action, this.model);
+			this.ui.cartBtn.text(text);
 		}
+		
 	});
 	
 	var ProductView = Backbone.Marionette.ItemView.extend({
@@ -129,8 +164,6 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		},
 		
 		initialize: function() {
-			var self = this;
-			
 			_.bindAll(this);
 			
 			// Change toggle cart value, and flash
