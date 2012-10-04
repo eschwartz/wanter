@@ -208,27 +208,11 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			var self = this;
 			
 			_.bindAll(this);
-			
-			// Show no results messages
-			ProductsApp.vent.on("search:noResults", function() {
-				self.showMessage("Nothing exists like you are describing. Sorry.");
-			});
-			
-			// Show error message
-			ProductsApp.vent.on("search:error", function() {
-				self.showMessage("Er... looks like you might have broken the internet. Awkward.");
-			});
 		},
 		
 		appendHtml: function(collectionView, itemView, index) {
 			// Add the view before our clearfix
 			itemView.$el.insertBefore(collectionView.ui.clearFix);
-		},
-		
-		// Show a message (eg, on error)
-		showMessage: function(msg) {
-				console.log('no res');
-			this.ui.message.html(msg);
 		},
 		
 		infiniteScroller: function() {
