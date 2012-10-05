@@ -57,26 +57,28 @@
 	<div class="<%=inCart? 'cross': 'check'%> toggleCart"></div>
 </script>
 
-
+<script id="detail-container-template" type="text/html">
+	detail layout
+	<div class="details">
+	</div>
+</script>
 
 <script id="product-details-template" type="text/html">
-	<div class="details-container">
-		<div class="left image">
-			<img src="<%=imageSrc() %>" alt="<%=title %>" />
-		</div>
-		<div class="left content">
-			<h2><%=title %></h2>
-			<h5><%=brand %></h5>
-			
-			<button class="btn toggleCart">
-				<%=inCart? "Remove from Cart": "Add to Cart" %>
-			</button>
-			
-			<p><%=description %></p>
-			<p><a href="<%=link %>" target="_blank">Learn more</a></p>
-		</div>   
-		<div class="clear"></div>
+	<div class="left image">
+		<img src="<%=imageSrc() %>" alt="<%=title %>" />
 	</div>
+	<div class="left content">
+		<h2><%=title %></h2>
+		<h5><%=brand %></h5>
+		
+		<button class="btn toggleCart">
+			<%=inCart? "Remove from Cart": "Add to Cart" %>
+		</button>
+		
+		<p><%=description %></p>
+		<p><a href="<%=link %>" target="_blank">Learn more</a></p>
+	</div>   
+	<div class="clear"></div>
 </script>
 
 

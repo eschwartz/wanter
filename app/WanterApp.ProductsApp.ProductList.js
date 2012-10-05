@@ -80,7 +80,7 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		},
 		
 		// Save height (for resizing height in onRender) then fade out
-		beforeRender: function(render) {
+		/*beforeRender: function(render) {
 			//Check that container is rendered
 			if(this.ui.container instanceof $) {
 				
@@ -130,7 +130,7 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			this.$el.slideUp(close);
 			
 			return false;
-		},
+		},*/
 		
 		// Change cartBtn text between "Add"/"Remove"
 		toggleCartBtnUI: function() {
@@ -224,9 +224,44 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		template: '#loading-template'
 	});
 	
+	var _detailLayout = Backbone.Marionette.Layout.extend({
+		template: '#detail-container-template',
+		className: 'detail-container',
+		
+		regions: {
+			'details': '.details'
+		},
+		
+		initialize: function() {
+			_.bindAll(this);
+			
+			// Close when collection is reset
+			this.bindTo(this.collection, "reset", this.close);
+			
+			// Handle detail request
+			ProductList.vent.on("detail:request", this.showDetail);
+		},
+		
+		showDetail: function(model, itemView) {
+			var isMyItemView = (this.options.myItemViews.indexOf(itemView)) >= 0;
+			
+			// Check that this layout is responsible for the requesting itemView
+			// (maybe not the most efficient calculation to make every layout do this on req... but it works!)
+			if(isMyItemView) {	
+				var detailView = new DetailView({ model: model });
+				this.details.show(detailView);
+			}
+			else {
+				this.details.close();
+			}
+		}
+	});
+	
 	var ProductListView = Backbone.Marionette.CompositeView.extend({
 		template	: '#product-list-template',
 		itemView	: ProductView,
+		
+		rowItemViews: [],						// Array of item views in the row (used in appendHtml);
 		
 		ui: {
 			'clearFix'		: '#clearList',
@@ -244,8 +279,26 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		},
 		
 		appendHtml: function(collectionView, itemView, index) {
+			var isLastInRow = ((index + 1) % _perRow === 0);
+			var detailContainer;
+			
 			// Add the view before our clearfix
 			itemView.$el.insertBefore(collectionView.ui.clearFix);
+			
+			// Collect itemViews in row
+			this.rowItemViews.push(itemView);
+			
+			// Add details container layout at end of row
+			if (isLastInRow) {
+				detailContainer = new _detailLayout({ collection: this.collection, myItemViews: this.rowItemViews });
+				
+				// Note that we insert the $el before rendering
+				// so that my itemView.beforeClose has access to an el in the DOM
+				itemView.$el.after(detailContainer.$el);
+				detailContainer.render();
+				
+				this.rowItemViews = [];
+			}
 		},
 		
 		infiniteScroller: function() {
@@ -352,7 +405,7 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 	
 	
 	// Handle detail request
-	this.vent.on("detail:request", this.showDetail);
+	//this.vent.on("detail:request", this.showDetail);
 
 	// Show Products when layout's ready
 	WanterApp.ProductsApp.vent.on("layout:rendered", function() {
