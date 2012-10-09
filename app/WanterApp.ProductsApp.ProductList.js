@@ -79,58 +79,6 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			this.bindTo(this.model, "change:inCart", this.toggleCartBtnUI);
 		},
 		
-		// Save height (for resizing height in onRender) then fade out
-		/*beforeRender: function(render) {
-			//Check that container is rendered
-			if(this.ui.container instanceof $) {
-				
-				// Save the elements height, so we can do height-change animation in this.onRender
-				this.elHeight = this.ui.container.height();
-				
-				// Fade out container, then render
-				this.ui.container.fadeTo(300, 0, render); 
-			}
-			
-			// Container not rendered --> height to zero (first display in row)
-			else {
-				this.elHeight = 0;
-				render();
-			}
-				
-			return false;
-		},
-		
-		// Resize container to new height, then fade in content
-		onRender: function() {
-			// Because someone changed our model, we need to make sure everything is bound correctly
-			// Making me think this is more hack-ish than I would like....
-			// Actually, we're ruining all of Marionette's cleanup benefits by doing it like this. 
-			// We really need to close the view, and think of another way to handle rows....
-			this.initialize();
-			
-			// Calculate new height
-			var self = this;
-			var newHeight = this.ui.container.height();
-						
-			// Fix to old height
-			this.ui.container.height(this.elHeight);
-			
-			// Hide container content
-			this.ui.container.fadeTo(0,0);
-			
-			// Animate to new height
-			this.ui.container.animate({height: newHeight}, function() {
-				self.ui.container.fadeTo(300, 1);
-			});
-			
-		},
-		
-		// Slideup the container	
-		beforeClose: function(close) {
-			this.$el.slideUp(close);
-			
-			return false;
-		},*/
 		
 		beforeClose: function(close) {
 			this.$el.fadeOut(close);
@@ -176,15 +124,19 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		},
 		
 		handleReqDetail: function() {
+			var self = this;
+			
 			// Trigger detail request to this module
 			ProductList.vent.trigger('detail:request', this.model, this);
 			
 			// Reset active class
 			$('.' + $.trim(this.className.replace(' ', '.'))).removeClass(this.activeClassName);
-			this.$el.addClass(this.activeClassName);
+			this.$el.toggleClass(this.activeClassName);
 			
 			// Scroll to element
-			//$.scrollTo(this.$el, {duration: 400, offset: {top: 60} });
+			/*window.setTimeout(function() {
+				$.scrollTo(self.$el, {duration: 400, offset: {top: 60} });
+			}, 800);*/
 		},
 		
 		// Fade in element
@@ -256,9 +208,10 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		},
 		
 		showDetail: function(model, itemView) {
-			var self = this;
 			var isMyItemView = (this.options.myItemViews.indexOf(itemView)) >= 0;
+			var isSameView = this.details && this.details.currentView && (model == this.details.currentView.model);		
 			
+			// Should be a jquery plugin. oh well.
 			var getAutoHeight  = function($el) {
 				var $clone = $el.clone().css({"height":"auto","width":"auto"}).appendTo('body');
 				var autoHeight = $clone.outerHeight();
@@ -267,26 +220,35 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 				return autoHeight;
 			}
 			
-			// Check that this layout is responsible for the requesting itemView
-			// (maybe not the most efficient calculation to make every layout do this on req... but it works!)
-			if(isMyItemView) {	
+			if(isSameView) {
+				this.closeDetail();
+			}
+			else if(isMyItemView) {	
 				var detailView = new DetailView({ model: model });
 				this.details.show(detailView);
 				
-				this.$el.animate({height: getAutoHeight(detailView.$el)}, 800);
-				console.log(getAutoHeight(detailView.$el));
+				this.$el.animate({height: getAutoHeight(detailView.$el)}, 200);
 			}
 
-			// This isn't my detail, but I need to close mine
-			else if(this.details.currentView) {
-				// Fix Height
-				this.$el.height(this.$el.height());
-				
-				// Close details region view, then slideup layout
-				this.details.close(function() {	
-					self.$el.animate({height: 0 });
-				});
+			// It's not mine, so I should close mine
+			else if(this.details && this.details.currentView) {
+				this.closeDetail();
 			}
+		},
+		
+		closeDetail: function() {
+			var self = this;
+			
+			// Fix Height
+			this.$el.height(this.$el.height());
+			
+			// remove active class (hack-ish)
+			$('.active').removeClass('active');
+			
+			// Close details region view, then slideup layout
+			this.details.close(function() {	
+				self.$el.animate({height: 0 });
+			});
 		}
 		
 	});
@@ -366,56 +328,6 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		ProductList.vent.trigger("productList:rendered");
 	};
 	
-	// Handle displaying detail views in the product lsit
-	ProductList.showDetail = function(model, itemView) {
-		var isSameRow = (!_activeDetailView)? false: (_getLastRowItem(itemView)[0] === _activeDetailView.$el.prev('.item')[0]),
-			isSameItem = (_activeDetailView && _activeDetailView.model === model);
-		
-		// Renders and inserts a detail view at the end of the row
-		var render = function() {
-			_activeDetailView = new DetailView({model: model});
-			_activeDetailView.$el.insertAfter(_getLastRowItem(itemView));
-			_activeDetailView.render();
-			
-			// Scroll to the row
-			$.scrollTo(_activeDetailView.$el, {duration: 400, offset: {top: -80} });
-		}
-		
-		// Give the active class to the appropriate itemView
-		var setActive = function() {
-			// Set active item
-			$('.item').removeClass(itemView.activeClassName);
-			itemView.$el.addClass(itemView.activeClassName);
-		}
-		
-		// Same view --> close the detailView
-		if(isSameItem) {
-			_activeDetailView.close();
-			_activeDetailView = null;
-			
-			// Remove active class on itemView
-			$('.item').removeClass(itemView.activeClassName);
-		}
-		
-		// No detailView open --> render a new one
-		else if(!_activeDetailView) {
-			render();
-			setActive();
-		}
-		
-		// We're in the same row --> refresh the detailView
-		else if(isSameRow) {
-			_activeDetailView.model = model;
-			_activeDetailView.render();
-			setActive();
-		}
-		
-		// Close the detail view, then render a new detail view in a new row
-		else {
-			_activeDetailView.close(render);
-			setActive();
-		}
-	};
 	
 	
 	
@@ -438,9 +350,6 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 	
 	
 	
-	// Handle detail request
-	//this.vent.on("detail:request", this.showDetail);
-
 	// Show Products when layout's ready
 	WanterApp.ProductsApp.vent.on("layout:rendered", function() {
 		WanterApp.ProductsApp.ProductList.showProducts(WanterApp.ProductsApp.products);
