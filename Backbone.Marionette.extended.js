@@ -99,6 +99,32 @@ _.extend(Backbone.Marionette.View.prototype, {
 	}
 });
 
+
+// Handle beforeClose on regions, allowing callbacks
+_.extend(Backbone.Marionette.Region.prototype, {
+	close: function(callback) {
+		var view = this.currentView;
+		var self = this;
+		
+		callback = (callback && _.isFunction(callback))? callback : window.noop;
+		
+		if (!view){ 
+			callback();
+			return; 
+		}
+	
+		if (view.close) { 
+			view.close(function() {
+				callback();
+				this.trigger("view:closed", view);
+			});
+		}
+	
+		delete this.currentView;
+		
+	}
+});
+
 _.extend(Backbone.Marionette.ItemView.prototype, {
 	
 	

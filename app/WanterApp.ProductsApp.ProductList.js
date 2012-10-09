@@ -62,7 +62,7 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 	
 	var DetailView = _baseProductView.extend({
 		template	: '#product-details-template',
-		className	: 'productDetails item',
+		className	: 'productDetails',
 		elHeight	: null,
 		
 		ui: {
@@ -132,6 +132,11 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 			return false;
 		},*/
 		
+		beforeClose: function(close) {
+			this.$el.fadeOut(close);
+			return false;
+		},
+		
 		// Change cartBtn text between "Add"/"Remove"
 		toggleCartBtnUI: function() {
 			var text = this.model.get('inCart')? "Remove from Cart": "Add to Cart";
@@ -171,7 +176,15 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		},
 		
 		handleReqDetail: function() {
+			// Trigger detail request to this module
 			ProductList.vent.trigger('detail:request', this.model, this);
+			
+			// Reset active class
+			$('.' + $.trim(this.className.replace(' ', '.'))).removeClass(this.activeClassName);
+			this.$el.addClass(this.activeClassName);
+			
+			// Scroll to element
+			//$.scrollTo(this.$el, {duration: 400, offset: {top: 60} });
 		},
 		
 		// Fade in element
@@ -243,18 +256,39 @@ WanterApp.module("ProductsApp.ProductList", function(ProductList, WanterApp, Bac
 		},
 		
 		showDetail: function(model, itemView) {
+			var self = this;
 			var isMyItemView = (this.options.myItemViews.indexOf(itemView)) >= 0;
+			
+			var getAutoHeight  = function($el) {
+				var $clone = $el.clone().css({"height":"auto","width":"auto"}).appendTo('body');
+				var autoHeight = $clone.outerHeight();
+				
+				$clone.remove();
+				return autoHeight;
+			}
 			
 			// Check that this layout is responsible for the requesting itemView
 			// (maybe not the most efficient calculation to make every layout do this on req... but it works!)
 			if(isMyItemView) {	
 				var detailView = new DetailView({ model: model });
 				this.details.show(detailView);
+				
+				this.$el.animate({height: getAutoHeight(detailView.$el)}, 800);
+				console.log(getAutoHeight(detailView.$el));
 			}
-			else {
-				this.details.close();
+
+			// This isn't my detail, but I need to close mine
+			else if(this.details.currentView) {
+				// Fix Height
+				this.$el.height(this.$el.height());
+				
+				// Close details region view, then slideup layout
+				this.details.close(function() {	
+					self.$el.animate({height: 0 });
+				});
 			}
 		}
+		
 	});
 	
 	var ProductListView = Backbone.Marionette.CompositeView.extend({

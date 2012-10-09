@@ -178,38 +178,44 @@ input[type=text]:focus {
 			width:120px;
 		}
 
-.item.productDetails {
+.detail-container {
+	clear:both;
+    position: relative;
+    top: -15px;
+    margin-bottom: -20px;
+}
+
+.productDetails {
 	width:100%;
 	box-sizing:border-box;
 	padding:30px;
-	margin: -15px 0 20px 0;
 	border-top:1px solid #ccc;
 	border-bottom:1px solid #ccc;
 	cursor:default;
 	position:relative;
 }
-	.item.productDetails .image img {
+	.productDetails .image img {
 		width:300px;
 		height:auto;
 	}
-	.item.productDetails .content {
+	.productDetails .content {
 		width: 350px;
 		margin-left:50px;
 		padding: 0 20px;
 	}
-	.item h2 {
+	.productDetails h2 {
 		font-family: ff-meta-web-pro, "Lucida Grande", sans-serif;
 		font-size:16px;
 		line-height:1.33em;
 	}
-	.item h5 {
+	.productDetails h5 {
 		font-family: ff-meta-web-pro, "Lucida Grande", sans-serif;
 		color:#8d8d8d;
 		font-size:14px;
 		padding-bottom:20px;
 		margin:0;
 	}
-	.item.thumb .toggleCart {
+	.item .toggleCart {
 		position:absolute;
 		top:-3px;
 		right:-3px;	

@@ -58,7 +58,6 @@
 </script>
 
 <script id="detail-container-template" type="text/html">
-	detail layout
 	<div class="details">
 	</div>
 </script>
