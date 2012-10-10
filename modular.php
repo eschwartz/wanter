@@ -116,6 +116,7 @@
 <script type="text/javascript" src="app/WanterApp.Flash.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.products.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.js"></script>
+<script type="text/javascript" src="app/WanterApp.ProductsApp.Router.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.ProductList.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.ProductSearch.js"></script>
 <script type="text/javascript" src="app/WanterApp.ProductsApp.ShoppingCart.js"></script>

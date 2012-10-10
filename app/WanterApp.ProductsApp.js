@@ -43,17 +43,34 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 	WanterApp.addInitializer(function() {
 		ProductsApp.initializeLayout();
 	});
-
 	
+	
+	/**
+	 * Public methods (and my router controller)
+	*/
+	this.navSearch = function(term) {
+		ProductsApp.vent.trigger("search:term", term);
+	}
+	this.search = function(term) {
+		ProductsApp.products.search(term);
+	}
+	this.defaultSearch = function() {
+		ProductsApp.navSearch("men's blazer");
+	}
 	
 
 	/**
 	 * Event Handling
 	*/
 	
+	// Start Backbone.History w/Router
+	this.vent.on("searchView:rendered", function() {					// this is a crappy trigger, imo. But otherwise search term won't show on load
+		if( ! Backbone.History.started) Backbone.history.start();
+	});
+	
 	// Run search on term change
 	this.vent.on("search:term", function(term) {
-		WanterApp.ProductsApp.products.search(term);
+		ProductsApp.search(term);
 	});
 	
 	// Handle Search flash messages
@@ -87,10 +104,6 @@ WanterApp.module("ProductsApp", function(ProductsApp, WanterApp, Backbone, Mario
 		WanterApp.Flash.timedFlash("cart:saving", "Saving...");
 		WanterApp.Flash.timedFlash("cart:removed", "Product removed from cart");
 	});
-});
-
-WanterApp.ProductsApp.addInitializer(function() {
-	WanterApp.ProductsApp.vent.trigger("search:term", "men's blazer");
 });
 
 

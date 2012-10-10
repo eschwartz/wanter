@@ -42,5 +42,7 @@ WanterApp.module("ProductsApp.ProductSearch", function(ProductSearch, WanterApp,
 	ProductsApp.vent.on("layout:rendered", function() {
 		var searchView = new SearchView()	
 		ProductsApp.layout.search.attachView(searchView);
+		
+		ProductsApp.vent.trigger("searchView:rendered");
 	});
 }); 
